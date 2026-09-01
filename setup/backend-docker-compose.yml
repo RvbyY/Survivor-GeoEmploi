@@ -3,9 +3,13 @@
 # Retrieved 2026-08-31, License - CC BY-SA 4.0
 
 services:
-  app:
+  backend:
+    build: ../backend
+    ports:
+      - "8080:8080"
     networks:
-      project_network:
+      - project_network
+
 networks:
   project_network:
     external: true
