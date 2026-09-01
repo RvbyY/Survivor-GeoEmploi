@@ -6,15 +6,14 @@ import (
     "fmt"
     "log"
     "net/http"
-
     _ "github.com/lib/pq"
 )
 
 const (
     host     = "localhost"
-    port     = 5432
-    user     = "postgres"
-    password = "motdepasse123"
+    port     = 4242
+    user     = "your_username"
+    password = "your_password"
     dbname   = "mydb"
 )
 
