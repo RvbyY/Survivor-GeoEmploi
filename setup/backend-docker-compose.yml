@@ -1,0 +1,11 @@
+# Source - https://stackoverflow.com/a/50761172
+# Posted by Miq
+# Retrieved 2026-08-31, License - CC BY-SA 4.0
+
+services:
+  app:
+    networks:
+      project_network:
+networks:
+  project_network:
+    external: true
