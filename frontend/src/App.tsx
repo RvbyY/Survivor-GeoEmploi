@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import Map from './components/Map.tsx'
-import LoadingSpinner from './components/Loadingspinner.tsx'
+import LoadingSpinner from './components/Loadingspinner'
+import CitySearchForm from './components/Citysearchform'
+import { geocodeCity } from './api/geocode'
 
 type Listing = {
   id: number
@@ -19,23 +21,33 @@ const mockListings: Listing[] = [
 function App() {
   const [listings, setListings] = useState<Listing[]>(mockListings)
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null)
+  const [locationDenied, setLocationDenied] = useState(false)
+  const [askedLocation, setAskedLocation] = useState(false)
 
-  useEffect(() => {
+  function requestLocation() {
+    setAskedLocation(true)
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setMapCenter([position.coords.latitude, position.coords.longitude])
       },
       (error) => {
         console.log('Geolocation refused or unavailable:', error.message)
-        setMapCenter([48.5833, 7.75])
+        setLocationDenied(true)
       }
     )
-  }, [])
-
-
+  }
+ 
+  async function handleCitySubmit(city: string): Promise<boolean> {
+    const coords = await geocodeCity(city)
+    if (coords) {
+      setMapCenter(coords)
+      return true
+    }
+    return false
+  }
+ 
   return (
     <div>
-        
       <h1>GéoEmploi</h1>
       <p>Listings loaded: {listings.length}</p>
       <ul>
@@ -43,15 +55,25 @@ function App() {
           <li key={listing.id}>{listing.title}</li>
         ))}
       </ul>
+ 
       {mapCenter ? (
         <Map listings={listings} center={mapCenter} />
-      ) : (
+      ) : locationDenied ? (
+        <CitySearchForm onSubmit={handleCitySubmit} />
+      ) : askedLocation ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
           <LoadingSpinner />
+        </div>
+      ) : (
+        <div>
+          <p>Allow location access for a better experience, or enter your city.</p>
+          <button onClick={requestLocation}>Use my location</button>
+          <button onClick={() => setLocationDenied(true)}>Enter city instead</button>
         </div>
       )}
     </div>
   )
 }
+
 
 export default App
