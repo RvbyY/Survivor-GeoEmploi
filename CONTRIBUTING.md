@@ -12,7 +12,7 @@
 # Communication among the team
 
 Communication between team members takes place on a private Discord chat
-> [Ask to a group member to be add]
+> Ask to a group member to be add
 
 ---
 
