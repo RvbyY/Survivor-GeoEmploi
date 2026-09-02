@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import Map from './components/Map.tsx'
+import LoadingSpinner from './components/Loadingspinner.tsx'
 
 type Listing = {
   id: number
@@ -8,7 +9,6 @@ type Listing = {
   lat: number
   lng: number
 }
-
 
 const mockListings: Listing[] = [
   { id: 1, title: 'Développeur Backend', lat: 48.8566, lng: 2.3522 },   // Paris
@@ -18,6 +18,20 @@ const mockListings: Listing[] = [
 
 function App() {
   const [listings, setListings] = useState<Listing[]>(mockListings)
+  const [mapCenter, setMapCenter] = useState<[number, number] | null>(null)
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setMapCenter([position.coords.latitude, position.coords.longitude])
+      },
+      (error) => {
+        console.log('Geolocation refused or unavailable:', error.message)
+        setMapCenter([48.5833, 7.75])
+      }
+    )
+  }, [])
+
 
   return (
     <div>
@@ -29,7 +43,13 @@ function App() {
           <li key={listing.id}>{listing.title}</li>
         ))}
       </ul>
-      <Map />
+      {mapCenter ? (
+        <Map listings={listings} center={mapCenter} />
+      ) : (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+          <LoadingSpinner />
+        </div>
+      )}
     </div>
   )
 }
