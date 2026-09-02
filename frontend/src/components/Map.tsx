@@ -30,7 +30,10 @@ export default function Map({ listings, center }: MapProps) {
         '&LAYER=GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2' +
         '&STYLE=normal&FORMAT=image/png' +
         '&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
-      { attribution: '&copy; IGN-F/Géoportail' }
+      { minZoom: 3,
+        maxZoom: 19,
+        attribution: '&copy; IGN-F/Géoportail'
+      }
     ).addTo(map)
 
     mapInstance.current = map
