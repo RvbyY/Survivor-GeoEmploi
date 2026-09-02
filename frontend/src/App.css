@@ -62,19 +62,26 @@
   padding: 4px 8px;
 }
 
-.brand-block__mark {
-  width: 28px;
-  height: 28px;
-  border: none;
-  object-fit: contain;
-}
-
 .brand-block__name {
   font-family: var(--heading);
   font-weight: 700;
   font-size: 18px;
-  color: var(--text-h);
   letter-spacing: -0.2px;
+}
+
+.brand-block--light .brand-block__name {
+  color: #ffffff;
+}
+
+.brand-block--dark .brand-block__name {
+  color: var(--bg);
+}
+
+.brand-block__mark {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  /* no filter — the mark keeps its real colors everywhere */
 }
 
 /* ---- Floating location card ---- */
@@ -160,6 +167,16 @@
 
 .btn--secondary:hover {
   border-color: #dfe3ea;
+}
+
+.btn--secondary-on-dark {
+  background: transparent;
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn--secondary-on-dark:hover {
+  border-color: #ffffff;
 }
 
 /* ---- City search form ---- */
