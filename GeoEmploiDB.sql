@@ -22,6 +22,6 @@ CREATE TABLE offers (
 
 CREATE TABLE candidacy (
     id SERIAL PRIMARY KEY,
-    offer_id SERIAL PRIMARY KEY REFERENCES offers(id),
-    candidate_id SERIAL PRIMARY KEY REFERENCES users(id)
+    offer_id INTEGER REFERENCES offers(id),
+    candidate_id INTEGER REFERENCES users(id)
 );
