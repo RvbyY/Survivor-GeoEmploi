@@ -33,6 +33,11 @@ function App() {
       (error) => {
         console.log('Geolocation refused or unavailable:', error.message)
         setLocationDenied(true)
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 300000,
       }
     )
   }
