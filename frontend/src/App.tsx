@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import './App.css'
-import Map from './components/Map.tsx'
+import Map from './components/Map'
 import LoadingSpinner from './components/Loadingspinner'
 import CitySearchForm from './components/Citysearchform'
+import BrandBlock from './components/Brandblock'
 import { geocodeCity } from './api/geocode'
 
 type Listing = {
@@ -19,10 +20,10 @@ const mockListings: Listing[] = [
 ]
 
 function App() {
-  const [listings, setListings] = useState<Listing[]>(mockListings)
+  const [listings] = useState<Listing[]>(mockListings)
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null)
-  const [locationDenied, setLocationDenied] = useState(false)
   const [askedLocation, setAskedLocation] = useState(false)
+  const [locationDenied, setLocationDenied] = useState(false)
 
   function requestLocation() {
     setAskedLocation(true)
@@ -34,14 +35,10 @@ function App() {
         console.log('Geolocation refused or unavailable:', error.message)
         setLocationDenied(true)
       },
-      {
-        enableHighAccuracy: false,
-        timeout: 8000,
-        maximumAge: 300000,
-      }
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
     )
   }
- 
+
   async function handleCitySubmit(city: string): Promise<boolean> {
     const coords = await geocodeCity(city)
     if (coords) {
@@ -50,35 +47,49 @@ function App() {
     }
     return false
   }
- 
+
   return (
-    <div>
-      <h1>GéoEmploi</h1>
-      <p>Listings loaded: {listings.length}</p>
-      <ul>
-        {listings.map((listing) => (
-          <li key={listing.id}>{listing.title}</li>
-        ))}
-      </ul>
- 
-      {mapCenter ? (
-        <Map listings={listings} center={mapCenter} />
-      ) : locationDenied ? (
-        <CitySearchForm onSubmit={handleCitySubmit} />
-      ) : askedLocation ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
-          <LoadingSpinner />
-        </div>
-      ) : (
-        <div>
-          <p>Allow location access for a better experience, or enter your city.</p>
-          <button onClick={requestLocation}>Use my location</button>
-          <button onClick={() => setLocationDenied(true)}>Enter city instead</button>
-        </div>
-      )}
+    <div className="app-shell">
+      <header className="app-header">
+        <BrandBlock />
+        <span className="offer-count">
+          {listings.length} offre{listings.length > 1 ? 's' : ''}
+        </span>
+      </header>
+
+      <main className="map-stage">
+        {mapCenter && <Map listings={listings} center={mapCenter} />}
+
+        {!mapCenter && (
+          <div className="location-card">
+            {locationDenied ? (
+              <CitySearchForm onSubmit={handleCitySubmit} />
+            ) : askedLocation ? (
+              <div className="location-card__loading">
+                <LoadingSpinner />
+                <p>Localisation en cours…</p>
+              </div>
+            ) : (
+              <div className="location-card__prompt">
+                <p>Autorisez la localisation pour de meilleurs résultats, ou saisissez une ville.</p>
+                <div className="location-card__actions">
+                  <button className="btn btn--primary" onClick={requestLocation}>
+                    Utiliser ma position
+                  </button>
+                  <button
+                    className="btn btn--secondary"
+                    onClick={() => setLocationDenied(true)}
+                  >
+                    Saisir une ville
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   )
 }
-
 
 export default App

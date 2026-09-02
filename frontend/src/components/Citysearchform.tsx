@@ -10,23 +10,29 @@ export default function CitySearchForm({ onSubmit }: CitySearchFormProps) {
 
   return (
     <form
-      onSubmit={async(e) => {
+      className="city-search"
+      onSubmit={async (e) => {
         e.preventDefault()
         const success = await onSubmit(input)
         setNotFound(!success)
       }}
     >
-      <p>We couldn't get your location. Enter your city instead:</p>
-      <input
-        value={input}
-        onChange={(e) => {
-          setInput(e.target.value)
-          setNotFound(false) // clear the error once they start typing again
-        }}
-        placeholder="e.g. Strasbourg"
-      />
-      <button type="submit">Search</button>
-      {notFound && <p style={{ color: 'red' }}>City not found — try again.</p>}
+      <p>Nous n'avons pas pu vous localiser. Indiquez votre ville :</p>
+      <div className="city-search__row">
+        <input
+          className="city-search__input"
+          value={input}
+          onChange={(e) => {
+            setInput(e.target.value)
+            setNotFound(false)
+          }}
+          placeholder="ex. Strasbourg"
+        />
+        <button className="btn btn--primary" type="submit">
+          Rechercher
+        </button>
+      </div>
+      {notFound && <p className="city-search__error">Ville introuvable — réessayez.</p>}
     </form>
   )
 }
