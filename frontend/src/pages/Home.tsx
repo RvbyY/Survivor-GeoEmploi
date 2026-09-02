@@ -4,6 +4,7 @@ import LoadingSpinner from '../components/Loadingspinner'
 import CitySearchForm from '../components/Citysearchform'
 import BrandBlock from '../components/Brandblock'
 import { geocodeCity } from '../api/geocode'
+import { Link } from 'react-router-dom'
 
 type Listing = {
   id: number
@@ -57,6 +58,7 @@ function Home() {
     <div className="app-shell">
       <header className="app-header">
         <BrandBlock />
+        <Link to="/login" className="btn btn--secondary-on-dark">Se connecter</Link>
         <span className="offer-count">
           {listings.length} offre{listings.length > 1 ? 's' : ''}
         </span>
