@@ -8,6 +8,8 @@ import (
     "net/http"
     _ "github.com/lib/pq"
 	"backend/handlers"
+	"time"
+	"context"
 )
 
 const (
@@ -18,12 +20,20 @@ const (
     dbname   = "mydb"
 )
 
+const appVersion = "0.2"
+
 var db *sql.DB
 
 type User struct {
     ID    int    `json:"id"`
     Name  string `json:"name"`
     Email string `json:"email"`
+}
+
+type HealthResponse struct {
+	Status   string `json:"status"`
+	Version  string `json:"version"`
+	Database string `json:"database"`
 }
 
 func main() {
@@ -48,9 +58,37 @@ func main() {
     http.HandleFunc("/users/update", updateUser)
     http.HandleFunc("/users/delete", deleteUser)
 	http.HandleFunc("/offers", handlers.GetOffer)
+	http.HandleFunc("/health", Health)
 
     fmt.Println("Server is listening on port 8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
+}
+
+func Health(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 150*time.Millisecond)
+	defer cancel()
+
+	dbStatus := "up"
+	err := db.PingContext(ctx)
+	if err != nil{
+		dbStatus = "down"
+	}
+	overallStatus := "ok"
+	if dbStatus == "down"{
+		overallStatus = "degraded"
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	if overallStatus != "ok"{
+		w.WriteHeader(http.StatusServiceUnavailable)
+	} else {
+		w.WriteHeader(http.StatusOK)
+	}
+	json.NewEncoder(w).Encode(HealthResponse{
+		Status: overallStatus,
+		Version: appVersion,
+		Database: dbStatus,
+	})
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {

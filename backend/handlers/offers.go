@@ -26,3 +26,7 @@ func GetOffer(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(offers)
 }
+
+func AddOffer(w http.ResponseWriter, r *http.Request) {
+	
+}
