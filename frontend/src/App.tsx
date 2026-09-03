@@ -1,36 +1,23 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import NotFound from './pages/Notfound'
 import './App.css'
-import Map from './components/Map.tsx'
-
-type Listing = {
-  id: number
-  title: string
-  lat: number
-  lng: number
-}
-
-
-const mockListings: Listing[] = [
-  { id: 1, title: 'Développeur Backend', lat: 48.8566, lng: 2.3522 },   // Paris
-  { id: 2, title: 'Développeur Frontend', lat: 45.7640, lng: 4.8357 }, // Lyon
-  { id: 3, title: 'DevOps Engineer', lat: 43.2965, lng: 5.3698 },      // Marseille
-]
+import ServerError from './pages/Servererror'
+import ErrorBoundary from './components/Errorboundary'
+import Login from './pages/Login'
 
 function App() {
-  const [listings, setListings] = useState<Listing[]>(mockListings)
-
   return (
-    <div>
-        
-      <h1>GéoEmploi</h1>
-      <p>Listings loaded: {listings.length}</p>
-      <ul>
-        {listings.map((listing) => (
-          <li key={listing.id}>{listing.title}</li>
-        ))}
-      </ul>
-      <Map />
-    </div>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/500" element={<ServerError />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 
