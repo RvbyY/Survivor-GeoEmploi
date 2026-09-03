@@ -5,19 +5,8 @@ import CitySearchForm from '../components/Citysearchform'
 import BrandBlock from '../components/Brandblock'
 import { geocodeCity } from '../api/geocode'
 import { Link } from 'react-router-dom'
-
-type Listing = {
-  id: number
-  title: string
-  lat: number
-  lng: number
-}
-
-const mockListings: Listing[] = [
-  { id: 1, title: 'Développeur Backend', lat: 48.8566, lng: 2.3522 },   // Paris
-  { id: 2, title: 'Développeur Frontend', lat: 45.7640, lng: 4.8357 }, // Lyon
-  { id: 3, title: 'DevOps Engineer', lat: 43.2965, lng: 5.3698 },      // Marseille
-]
+import mockListings from '../data/mockListings'
+import type { Listing } from '../data/mockListings'
 
 function Home() {
   const [listings] = useState<Listing[]>(mockListings)

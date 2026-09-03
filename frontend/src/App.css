@@ -267,3 +267,31 @@
 .status-page a:hover {
   text-decoration: none;
 }
+
+.listing-marker {
+  background: none;
+  border: none;
+}
+
+.listing-popup .leaflet-popup-content-wrapper {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 30, 56, 0.25);
+}
+
+.listing-popup .leaflet-popup-content {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f1e38;
+  margin: 10px 14px;
+}
+
+.listing-popup .leaflet-popup-tip {
+  background: #ffffff;
+}
+
+.listing-popup .leaflet-popup-close-button {
+  color: var(--bg);
+  font-size: 18px;
+}
