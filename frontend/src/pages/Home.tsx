@@ -2,12 +2,9 @@ import { useState } from 'react'
 import Map from '../components/Map'
 import LoadingSpinner from '../components/Loadingspinner'
 import CitySearchForm from '../components/Citysearchform'
-import BrandBlock from '../components/Brandblock'
 import { geocodeCity } from '../api/geocode'
-import { Link } from 'react-router-dom'
 import mockListings from '../data/mockListings'
 import type { Listing } from '../data/mockListings'
-import { useAuth } from '../context/Authcontext'
 
 function Home() {
   const [listings] = useState<Listing[]>(mockListings)
@@ -16,53 +13,63 @@ function Home() {
   const [mapCenter, setMapCenter] = useState<[number, number]>(FRANCE_CENTER)
   const [askedLocation, setAskedLocation] = useState(false)
   const [locationDenied, setLocationDenied] = useState(false)
-
   const [hasLocation, setHasLocation] = useState(false)
 
   function requestLocation() {
     setAskedLocation(true)
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setMapCenter([position.coords.latitude, position.coords.longitude])
+        setMapCenter([
+          position.coords.latitude,
+          position.coords.longitude
+        ])
         setHasLocation(true)
       },
       (error) => {
-        console.log('Geolocation refused or unavailable:', error.message)
+        console.log(
+          'Geolocation refused or unavailable:',
+          error.message
+        )
         setLocationDenied(true)
       },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
+      {
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 300000
+      }
     )
   }
-  const { isLoggedIn, logout } = useAuth()
-  
+
   async function handleCitySubmit(city: string): Promise<boolean> {
     const coords = await geocodeCity(city)
+
     if (coords) {
       setMapCenter(coords)
       setHasLocation(true)
       return true
     }
+
     return false
   }
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <BrandBlock />
-        {isLoggedIn ? (
-          <button className="btn btn--secondary-on-dark" onClick={logout}>Se déconnecter</button>
-        ) : (
-          <Link to="/login" className="btn btn--secondary-on-dark">Se connecter</Link>
-        )}
-        <span className="offer-count">
-          {listings.length} offre{listings.length > 1 ? 's' : ''}
-        </span>
-      </header>
 
       <main className="map-stage">
-        <div className={hasLocation ? 'map-layer map-layer--visible' : 'map-layer'}>
-          <Map listings={listings} center={mapCenter} />
+        <div
+          className={
+            hasLocation
+              ? 'map-layer map-layer--visible'
+              : 'map-layer'
+          }
+        >
+          <Map
+            listings={listings}
+            center={mapCenter}
+          />
         </div>
+
         {!hasLocation && (
           <div className="location-card">
             {locationDenied ? (
@@ -74,12 +81,23 @@ function Home() {
               </div>
             ) : (
               <div className="location-card__prompt">
-                <p>Autorisez la localisation pour de meilleurs résultats, ou saisissez une ville.</p>
+                <p>
+                  Autorisez la localisation pour de meilleurs résultats,
+                  ou saisissez une ville.
+                </p>
+
                 <div className="location-card__actions">
-                  <button className="btn btn--primary" onClick={requestLocation}>
+                  <button
+                    className="btn btn--primary"
+                    onClick={requestLocation}
+                  >
                     Utiliser ma position
                   </button>
-                  <button className="btn btn--secondary" onClick={() => setLocationDenied(true)}>
+
+                  <button
+                    className="btn btn--secondary"
+                    onClick={() => setLocationDenied(true)}
+                  >
                     Saisir une ville
                   </button>
                 </div>
