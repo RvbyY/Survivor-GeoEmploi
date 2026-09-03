@@ -25,9 +25,9 @@ const appVersion = "0.2"
 var db *sql.DB
 
 type User struct {
-    ID    int    `json:"id"`
-    Name  string `json:"name"`
-    Email string `json:"email"`
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type HealthResponse struct {
@@ -92,60 +92,60 @@ func Health(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
-    rows, err := db.Query("SELECT id, name, email FROM users")
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    defer rows.Close()
+	rows, err := db.Query("SELECT id, name, email FROM users")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
 
-    var users []User
-    for rows.Next() {
-        var user User
-        err := rows.Scan(&user.ID, &user.Name, &user.Email)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-        users = append(users, user)
-    }
+	var users []User
+	for rows.Next() {
+		var user User
+		err := rows.Scan(&user.ID, &user.Name, &user.Email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		users = append(users, user)
+	}
 
-    json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(users)
 }
 
 func addUser(w http.ResponseWriter, r *http.Request) {
-    var user User
-    err := json.NewDecoder(r.Body).Decode(&user)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-    _, err = db.Exec("INSERT INTO users (name, email) VALUES ($1, $2)", user.Name, user.Email)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	_, err = db.Exec("INSERT INTO users (name, email) VALUES ($1, $2)", user.Name, user.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    w.WriteHeader(http.StatusCreated)
-    fmt.Fprintf(w, "User added successfully")
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, "User added successfully")
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
-    var user User
-    err := json.NewDecoder(r.Body).Decode(&user)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-    _, err = db.Exec("UPDATE users SET name=$1, email=$2 WHERE id=$3", user.Name, user.Email, user.ID)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	_, err = db.Exec("UPDATE users SET name=$1, email=$2 WHERE id=$3", user.Name, user.Email, user.ID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    fmt.Fprintf(w, "User updated successfully")
+	fmt.Fprintf(w, "User updated successfully")
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
