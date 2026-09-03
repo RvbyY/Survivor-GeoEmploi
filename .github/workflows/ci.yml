@@ -97,7 +97,7 @@ jobs:
             cp -r frontend/dist dist-package/frontend
             cp backend/server dist-package/server
             cp backend/.env.example dist-package/ 2>/dev/null || true
-            cp ../../README.md dist-package/README.md 2>/dev/null || true
+            cp README.md dist-package/README.md 2>/dev/null || true
   
         - name: Upload build artifact
           uses: actions/upload-artifact@v4
