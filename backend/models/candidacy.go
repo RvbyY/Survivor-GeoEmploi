@@ -1,4 +1,4 @@
-package handlers
+package models
 
 type Candidacy struct {
 	ID          int `json:"id"`
