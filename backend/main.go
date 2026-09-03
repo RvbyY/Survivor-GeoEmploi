@@ -34,6 +34,7 @@ func main() {
         log.Fatalf("Error opening database connection: %v", err)
     }
     db = conn
+	handlers.DB = conn
     defer db.Close()
 
     err = db.Ping()
