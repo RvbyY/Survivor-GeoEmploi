@@ -1,0 +1,269 @@
+/* ---- Fonts ---- */
+
+@font-face {
+  font-family: 'Marianne';
+  src: url('/fonts/marianne/Marianne-Regular.otf') format('opentype');
+  font-weight: 400;
+}
+@font-face {
+  font-family: 'Marianne';
+  src: url('/fonts/marianne/Marianne-Medium.otf') format('opentype');
+  font-weight: 500;
+}
+@font-face {
+  font-family: 'Marianne';
+  src: url('/fonts/marianne/Marianne-Bold.otf') format('opentype');
+  font-weight: 700;
+}
+
+/* ---- Layout shell ---- */
+
+.app-shell {
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.offer-count {
+  font-family: var(--heading);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.map-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.map-stage .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+/* ---- Brand block ---- */
+
+.brand-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* protection zone: never let anything else sit closer than this */
+  padding: 4px 8px;
+}
+
+.brand-block__name {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.2px;
+}
+
+.brand-block--light .brand-block__name {
+  color: #ffffff;
+}
+
+.brand-block--dark .brand-block__name {
+  color: var(--bg);
+}
+
+.brand-block__mark {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  /* no filter — the mark keeps its real colors everywhere */
+}
+
+/* ---- Floating location card ---- */
+
+.location-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000; /* sit above Leaflet's own panes */
+  width: min(320px, calc(100% - 32px));
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(15, 30, 56, 0.25);
+  padding: 20px;
+  font-family: var(--sans);
+  color: var(--panel-ink, #0f1e38);
+}
+
+.location-card p {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #2a3550;
+}
+
+.location-card__loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.location-card__loading p {
+  margin: 0;
+}
+
+.location-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.map-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.map-layer--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---- Buttons: never blue-filled, per the charter ---- */
+
+.btn {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn--primary {
+  background: #ffffff;
+  color: var(--bg);
+  border: 2px solid var(--bg);
+}
+
+.btn--primary:hover {
+  background: #eef1f7;
+}
+
+.btn--secondary {
+  background: transparent;
+  color: var(--bg);
+  border: 2px solid transparent;
+}
+
+.btn--secondary:hover {
+  border-color: #dfe3ea;
+}
+
+.btn--secondary-on-dark {
+  background: transparent;
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn--secondary-on-dark:hover {
+  border-color: #ffffff;
+}
+
+/* ---- City search form ---- */
+
+.city-search__row {
+  display: flex;
+  gap: 8px;
+}
+
+.city-search__input {
+  flex: 1 1 auto;
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid #d7dbe4;
+  border-radius: 6px;
+}
+
+.city-search__input:focus-visible {
+  outline: 2px solid var(--bg);
+  outline-offset: 1px;
+}
+
+.location-card .city-search__error {
+  color: #b3261e;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+/* ---- Spinner ---- */
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border: 3px solid #e2e6ee;
+  border-top-color: var(--bg);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Status pages (404, 500, empty states) ---- */
+
+.status-page {
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+}
+
+.status-page .brand-block {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+}
+
+.status-page h1 {
+  font-size: 28px;
+  letter-spacing: -0.3px;
+}
+
+.status-page p {
+  font-family: var(--sans);
+  font-size: 16px;
+  color: var(--text);
+  max-width: 40ch;
+}
+
+.status-page a {
+  margin-top: 8px;
+  font-family: var(--heading);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-h);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.status-page a:hover {
+  text-decoration: none;
+}
