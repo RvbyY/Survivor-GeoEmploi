@@ -5,11 +5,7 @@ import type { Listing } from '../data/mockListings'
 import mockListings from '../data/mockListings'
 import { useState } from 'react'
 
-interface HeaderProps {
-  offerCount: number
-}
-
-function Header({ offerCount }: HeaderProps) {
+function Header() {
   const { isLoggedIn, logout } = useAuth()
   const [listings] = useState<Listing[]>(mockListings)
 
