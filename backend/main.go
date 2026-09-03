@@ -7,13 +7,14 @@ import (
     "log"
     "net/http"
     _ "github.com/lib/pq"
+	"backend/handlers"
 )
 
 const (
     host     = "localhost"
-    port     = 4242
-    user     = "your_username"
-    password = "your_password"
+    port     = 5432
+    user     = "postgres"
+    password = "motdepasse123"
     dbname   = "mydb"
 )
 
@@ -33,6 +34,7 @@ func main() {
         log.Fatalf("Error opening database connection: %v", err)
     }
     db = conn
+	handlers.DB = conn
     defer db.Close()
 
     err = db.Ping()
@@ -45,6 +47,7 @@ func main() {
     http.HandleFunc("/users/add", addUser)
     http.HandleFunc("/users/update", updateUser)
     http.HandleFunc("/users/delete", deleteUser)
+	http.HandleFunc("/offers", handlers.GetOffer)
 
     fmt.Println("Server is listening on port 8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
