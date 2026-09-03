@@ -2,6 +2,7 @@ import { useState, type SubmitEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import BrandBlock from '../components/Brandblock'
 import '../Auth.css'
+import { useAuth } from '../context/Authcontext'
 
 type AccountType = 'jobseeker' | 'employer'
 type Mode = 'login' | 'signup'
@@ -22,6 +23,7 @@ const initialForm: FormState = {
 
 export default function Login() {
   const navigate = useNavigate()
+  const { login } = useAuth()
 
   const [mode, setMode] = useState<Mode>('signup')
   const [accountType, setAccountType] = useState<AccountType>('jobseeker')
@@ -60,6 +62,7 @@ export default function Login() {
 
     // TODO: replace with a real call once the backend auth endpoint exists.
     console.log('Submitting', { mode, accountType, form })
+    login()
     navigate('/')
   }
 

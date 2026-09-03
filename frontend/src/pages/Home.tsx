@@ -7,6 +7,7 @@ import { geocodeCity } from '../api/geocode'
 import { Link } from 'react-router-dom'
 import mockListings from '../data/mockListings'
 import type { Listing } from '../data/mockListings'
+import { useAuth } from '../context/Authcontext'
 
 function Home() {
   const [listings] = useState<Listing[]>(mockListings)
@@ -32,7 +33,8 @@ function Home() {
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 300000 }
     )
   }
-
+  const { isLoggedIn, logout } = useAuth()
+  
   async function handleCitySubmit(city: string): Promise<boolean> {
     const coords = await geocodeCity(city)
     if (coords) {
@@ -47,7 +49,11 @@ function Home() {
     <div className="app-shell">
       <header className="app-header">
         <BrandBlock />
-        <Link to="/login" className="btn btn--secondary-on-dark">Se connecter</Link>
+        {isLoggedIn ? (
+          <button className="btn btn--secondary-on-dark" onClick={logout}>Se déconnecter</button>
+        ) : (
+          <Link to="/login" className="btn btn--secondary-on-dark">Se connecter</Link>
+        )}
         <span className="offer-count">
           {listings.length} offre{listings.length > 1 ? 's' : ''}
         </span>
