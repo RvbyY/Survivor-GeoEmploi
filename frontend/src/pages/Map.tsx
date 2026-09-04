@@ -5,7 +5,7 @@ import CitySearchForm from '../components/Citysearchform'
 import { geocodeCity } from '../api/geocode'
 import mockListings from '../data/mockListings'
 import type { Listing } from '../data/mockListings'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 function MapPage() {
   const [listings] = useState<Listing[]>(mockListings)
@@ -46,6 +46,40 @@ function MapPage() {
     )
   }
 
+  // Check whether the user already granted/denied geolocation.
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setLocationDenied(true)
+      return
+    }
+
+    navigator.permissions
+      ?.query({ name: 'geolocation' })
+      .then((permission) => {
+        if (permission.state === 'granted') {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setMapCenter([
+                position.coords.latitude,
+                position.coords.longitude
+              ])
+              setHasLocation(true)
+            },
+            () => {
+              setLocationDenied(true)
+            },
+            {
+              enableHighAccuracy: false,
+              timeout: 8000,
+              maximumAge: 300000
+            }
+          )
+        } else if (permission.state === 'denied') {
+          setLocationDenied(true)
+        }
+      })
+  }, [])
+
   async function handleCitySubmit(city: string): Promise<boolean> {
     const coords = await geocodeCity(city)
 
@@ -64,7 +98,11 @@ function MapPage() {
         <button
           className="list-toggle"
           onClick={() => setIsListOpen((open) => !open)}
-          aria-label={isListOpen ? 'Masquer la liste des offres' : 'Afficher la liste des offres'}
+          aria-label={
+            isListOpen
+              ? 'Masquer la liste des offres'
+              : 'Afficher la liste des offres'
+          }
         >
           {isListOpen ? '›' : '‹'}
         </button>

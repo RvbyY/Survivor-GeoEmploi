@@ -159,9 +159,16 @@ export default function MapComponent({ listings, center, hoveredId, onHoverMarke
 
   // React to hover coming FROM the offer list (open/close the matching popup).
   useEffect(() => {
+    if (!mapInstance.current) return
+
     markersRef.current.forEach((marker, id) => {
       if (id === hoveredId) {
         marker.openPopup()
+
+        mapInstance.current!.panTo(marker.getLatLng(), {
+          animate: true,
+          duration: 0.5,
+        })
       } else {
         marker.closePopup()
       }
