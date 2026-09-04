@@ -25,7 +25,7 @@ function OfferList({ listings, hoveredId, onHover, collapsed }: OfferListProps) 
         >
           <p className="offer-card__company">{listing.company}</p>
           <p className="offer-card__title">{listing.title}</p>
-          <p className="offer-card__summary">{listing.summary}</p>
+          <p className="offer-card__description">{listing.description}</p>
         </Link>
       ))}
     </div>

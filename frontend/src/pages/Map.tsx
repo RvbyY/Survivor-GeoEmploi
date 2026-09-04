@@ -107,7 +107,7 @@ function MapPage() {
           <span
             className={
               isListOpen
-                ? 'list-toggle__chevron list-toggle__chevron--right'
+                ? 'liast-toggle__chevron list-toggle__chevron--right'
                 : 'list-toggle__chevron list-toggle__chevron--left'
             }
           />
