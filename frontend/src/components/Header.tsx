@@ -11,7 +11,9 @@ function Header() {
 
   return (
     <header className="app-header">
-      <BrandBlock />
+      <Link to="/">
+          <BrandBlock />
+      </Link>
 
       <nav className="app-header__nav">
         <Link to="/" className="app-header__link">
