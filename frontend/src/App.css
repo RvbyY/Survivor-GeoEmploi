@@ -34,11 +34,48 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+.app-header__nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.app-header__link {
+  font-family: var(--heading);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-h);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.app-header__link:hover {
+  opacity: 0.7;
+}
+
+.app-header__account {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
 .offer-count {
   font-family: var(--heading);
   font-weight: 500;
   font-size: 14px;
   color: var(--text-h);
+}
+
+/* ---- Map page: offer list + map, side by side ---- */
+
+.map-page {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
 }
 
 .map-stage {
@@ -52,13 +89,106 @@
   width: 100%;
 }
 
+/* ---- Offer list ---- */
+
+.offer-list {
+  flex: 0 0 360px;
+  width: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #f4f6fa;
+  border-left: 1px solid #e2e6ee;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: flex-basis 0.25s ease, width 0.25s ease, padding 0.25s ease;
+}
+
+.offer-list--collapsed {
+  flex-basis: 0;
+  width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border-left: none;
+}
+
+.list-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1001; /* above the location card */
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #e2e6ee;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(15, 30, 56, 0.15);
+  color: var(--bg);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.list-toggle:hover {
+  background: #eef1f7;
+}
+
+.offer-card {
+  display: block;
+  background: #ffffff;
+  border: 1px solid #e2e6ee;
+  border-radius: 8px;
+  padding: 14px 16px;
+  text-decoration: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.offer-card:hover,
+.offer-card--active {
+  border-color: var(--bg);
+  box-shadow: 0 4px 12px rgba(15, 30, 56, 0.12);
+}
+
+.offer-card__company {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a6785;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.offer-card__title {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 15px;
+  color: #0f1e38;
+  margin: 0 0 6px;
+}
+
+.offer-card__summary {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4a5570;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* ---- Brand block ---- */
 
 .brand-block {
   display: flex;
   align-items: center;
   gap: 10px;
-  /* protection zone: never let anything else sit closer than this */
   padding: 4px 8px;
 }
 
@@ -81,7 +211,6 @@
   width: 28px;
   height: 28px;
   object-fit: contain;
-  /* no filter — the mark keeps its real colors everywhere */
 }
 
 /* ---- Floating location card ---- */
@@ -91,7 +220,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1000; /* sit above Leaflet's own panes */
+  z-index: 1000;
   width: min(320px, calc(100% - 32px));
   background: #ffffff;
   border-radius: 8px;
@@ -268,6 +397,8 @@
   text-decoration: none;
 }
 
+/* ---- Map markers & popups ---- */
+
 .listing-marker {
   background: none;
   border: none;
@@ -280,11 +411,42 @@
 }
 
 .listing-popup .leaflet-popup-content {
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 600;
-  color: #0f1e38;
   margin: 10px 14px;
+}
+
+.listing-popup__content {
+  font-family: var(--sans);
+}
+
+.listing-popup__company {
+  font-size: 11px;
+  font-weight: 600;
+  color: #5a6785;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 4px;
+}
+
+.listing-popup__title {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 14px;
+  color: #0f1e38;
+  margin: 0 0 6px;
+}
+
+.listing-popup__summary {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4a5570;
+  margin: 0 0 10px;
+}
+
+.listing-popup__details {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  padding: 8px 10px;
 }
 
 .listing-popup .leaflet-popup-tip {
