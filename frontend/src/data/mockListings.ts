@@ -27,9 +27,9 @@ const mockListings: Listing[] = [
   { id: 17, title: 'Développeur mobile', company: 'Cigogne Digital', summary: "Développez notre application mobile React Native utilisée par plus de 50 000 utilisateurs.", lat: 48.7406, lng: 7.3622 },
   { id: 18, title: 'Chargé de clientèle', company: 'Rhénacom', summary: "Assurez le suivi et la satisfaction de notre portefeuille de clients professionnels.", lat: 48.4667, lng: 7.4833 },
   { id: 19, title: 'Technicien de maintenance', company: 'Manufacture du Rhin', summary: "Intervenez sur les équipements industriels de notre site de production, en horaires d'équipe.", lat: 48.5333, lng: 7.5000 },
-  { id: 20, title: 'Ingénieur DevOps', company: 'Kleber Informatique', summary: "Rejoignez notre équipe infrastructure pour fiabiliser nos plateformes clients à fort trafic.", lat: 48.8566, lng: 2.3522 },
-  { id: 21, title: 'Développeur Backend', company: 'Ill Valley Tech', summary: "Concevez les services backend de notre marketplace B2B, en environnement microservices.", lat: 45.7640, lng: 4.8357 },
-  { id: 22, title: 'Data Analyst', company: 'Vosges Software', summary: "Exploitez les données d'usage de nos produits pour orienter nos décisions produit.", lat: 43.2965, lng: 5.3698 },
+  { id: 20, title: 'Ingénieur DevOps', company: 'Informatique', summary: "Rejoignez notre équipe infrastructure pour fiabiliser nos plateformes clients à fort trafic.", lat: 48.8566, lng: 2.3522 },
+  { id: 21, title: 'Développeur Backend', company: 'Valley Tech', summary: "Concevez les services backend de notre marketplace B2B, en environnement microservices.", lat: 45.7640, lng: 4.8357 },
+  { id: 22, title: 'Data Analyst', company: 'Software', summary: "Exploitez les données d'usage de nos produits pour orienter nos décisions produit.", lat: 43.2965, lng: 5.3698 },
 ]
 
 export default mockListings
