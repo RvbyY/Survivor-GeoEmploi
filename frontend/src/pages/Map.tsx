@@ -104,7 +104,13 @@ function MapPage() {
               : 'Afficher la liste des offres'
           }
         >
-          {isListOpen ? '›' : '‹'}
+          <span
+            className={
+              isListOpen
+                ? 'list-toggle__chevron list-toggle__chevron--right'
+                : 'list-toggle__chevron list-toggle__chevron--left'
+            }
+          />
         </button>
 
         <div
