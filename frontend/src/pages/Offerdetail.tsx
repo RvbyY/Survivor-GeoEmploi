@@ -1,5 +1,4 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import BrandBlock from '../components/Brandblock'
 import { useAuth } from '../context/Authcontext'
 import mockListings from '../data/mockListings'
 
