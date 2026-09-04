@@ -40,7 +40,7 @@ export default function OfferDetail() {
 
         <p className="offer-detail__company">{listing.company}</p>
         <h1>{listing.title}</h1>
-        <p className="offer-detail__summary">{listing.summary}</p>
+        <p className="offer-detail__summary">{listing.description}</p>
 
         <button className="btn btn--primary offer-detail__apply" onClick={handleApply}>
           Postuler

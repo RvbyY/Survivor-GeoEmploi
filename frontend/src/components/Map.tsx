@@ -103,9 +103,9 @@ export default function MapComponent({ listings, center, hoveredId, onHoverMarke
 
     listings.forEach((listing) => {
       const summaryPreview =
-        listing.summary.length > 90
-          ? listing.summary.slice(0, 90) + '…'
-          : listing.summary
+        listing.description.length > 90
+          ? listing.description.slice(0, 90) + '…'
+          : listing.description
 
       const popupHtml = `
         <div class="listing-popup__content">
