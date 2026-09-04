@@ -7,7 +7,7 @@ import ErrorBoundary from './components/Errorboundary'
 import Login from './pages/Login'
 import Layout from './Layout'
 import MapPage from './pages/Map'
-// import OfferDetail from './pages/OfferDetail'
+import OfferDetail from './pages/Offerdetail'
 
 function App() {
   return (
@@ -20,7 +20,7 @@ function App() {
             <Route path="*" element={<NotFound />} />
             <Route path="/login" element={<Login />} />
             <Route path="/map" element={<MapPage />} />
-            {/* <Route path="/offres/:id" element={<OfferDetail />} /> */}
+            <Route path="/offres/:id" element={<OfferDetail />} />
           </Route>
         </Routes>
       </BrowserRouter>
