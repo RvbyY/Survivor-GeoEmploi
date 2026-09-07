@@ -5,8 +5,6 @@ function Home() {
     <main className="home">
       <section className="home-hero">
         <div className="home-hero__content">
-          <p className="home-eyebrow">MINISTÈRE DU JOB ET BONHEUR</p>
-
           <h1>
             Trouvez votre prochain
             <span> job près de chez vous.</span>
@@ -132,7 +130,7 @@ function Home() {
             besoins.
           </p>
 
-          <Link to="/login" className="home-employer__link">
+          <Link to="/publier" className="home-employer__link">
             Publier une offre <span>→</span>
           </Link>
         </div>
@@ -169,17 +167,6 @@ function Home() {
           <span>→</span>
         </Link>
       </section>
-
-      <footer className="home-footer">
-        <span>GÉOEMPLOI_</span>
-
-        <div>
-          <Link to="/map">Carte</Link>
-          <Link to="/login">Connexion</Link>
-        </div>
-
-        <span>© 2026 · Ministère du Job et Bonheur</span>
-      </footer>
     </main>
   )
 }
