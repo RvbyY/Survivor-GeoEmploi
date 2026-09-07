@@ -1,0 +1,15 @@
+# Source - https://stackoverflow.com/a/50761172
+# Posted by Miq
+# Retrieved 2026-08-31, License - CC BY-SA 4.0
+
+services:
+  frontend:
+    build: ../frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - project_network
+
+networks:
+  project_network:
+    external: true

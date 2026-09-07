@@ -1,0 +1,36 @@
+:root {
+  --bg: #1B3A6B;       /* institutional blue — page background */
+  --text: #dde3ee;      /* body text on blue */
+  --text-h: #ffffff;    /* heading text on blue */
+  --border: #2e4a7a;
+
+  --sans: 'Spectral', Georgia, serif;
+  --heading: 'Marianne', 'Arial', sans-serif;
+
+  font: 16px/145% var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1, h2, h3 {
+  font-family: var(--heading);
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
