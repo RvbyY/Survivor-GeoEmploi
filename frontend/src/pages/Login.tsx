@@ -29,6 +29,7 @@ export default function Login() {
   const [accountType, setAccountType] = useState<AccountType>('jobseeker')
   const [form, setForm] = useState<FormState>(initialForm)
   const [errors, setErrors] = useState<string[]>([])
+  
 
   function updateField(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -62,7 +63,11 @@ export default function Login() {
 
     // TODO: replace with a real call once the backend auth endpoint exists.
     console.log('Submitting', { mode, accountType, form })
-    login()
+    login(accountType, {
+      email: form.email,
+      name: form.name,
+      companyName: accountType === 'employer' ? form.companyName : null,
+    })
     navigate('/')
   }
 

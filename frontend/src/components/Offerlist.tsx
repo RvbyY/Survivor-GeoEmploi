@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Listing } from '../data/mockListings'
+import { useAuth } from '../context/Authcontext';
 
 type OfferListProps = {
   listings: Listing[]
@@ -9,8 +10,19 @@ type OfferListProps = {
 }
 
 function OfferList({ listings, hoveredId, onHover, collapsed }: OfferListProps) {
+  const { isLoggedIn, accountType } = useAuth();
+
   return (
     <div className={collapsed ? 'offer-list offer-list--collapsed' : 'offer-list'}>
+      <div className="offer-list__header">
+        <span className="offer-list__count">{listings.length} offres</span>
+        {isLoggedIn && accountType === 'employer' && (
+          <Link to="/publier" className="offer-list__publish">
+            Publier une offre
+          </Link>
+        )}
+      </div>
+
       {listings.map((listing) => (
         <Link
           key={listing.id}
