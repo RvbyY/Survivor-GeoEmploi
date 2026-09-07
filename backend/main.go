@@ -1,15 +1,16 @@
 package main
 
 import (
-    "database/sql"
-    "encoding/json"
-    "fmt"
-    "log"
-    "net/http"
-    _ "github.com/lib/pq"
 	"backend/handlers"
-	"time"
+	"backend/middleware"
 	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
+	"time"
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -57,7 +58,8 @@ func main() {
     http.HandleFunc("/users/add", addUser)
     http.HandleFunc("/users/update", updateUser)
     http.HandleFunc("/users/delete", deleteUser)
-	http.HandleFunc("/offers", handlers.GetOffer)
+	http.HandleFunc("/offer/get", handlers.GetOffer)
+    http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
 	http.HandleFunc("/health", Health)
 
     fmt.Println("Server is listening on port 8080")
