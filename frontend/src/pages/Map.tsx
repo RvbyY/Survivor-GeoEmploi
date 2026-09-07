@@ -3,17 +3,15 @@ import OfferList from '../components/Offerlist'
 import LoadingSpinner from '../components/Loadingspinner'
 import CitySearchForm from '../components/Citysearchform'
 import { geocodeCity } from '../api/geocode'
-import mockListings from '../data/mockListings'
-import type { Listing } from '../data/mockListings'
+import { useListings } from '../context/Listingscontext'
 import { useEffect, useState } from 'react'
 
 function MapPage() {
-  const [listings] = useState<Listing[]>(mockListings)
+  const { listings } = useListings()
   const FRANCE_CENTER: [number, number] = [46.6034, 1.8883]
 
   const [mapCenter, setMapCenter] =
     useState<[number, number]>(FRANCE_CENTER)
-
   const [askedLocation, setAskedLocation] = useState(false)
   const [locationDenied, setLocationDenied] = useState(false)
   const [hasLocation, setHasLocation] = useState(false)
@@ -107,7 +105,7 @@ function MapPage() {
           <span
             className={
               isListOpen
-                ? 'liast-toggle__chevron list-toggle__chevron--right'
+                ? 'list-toggle__chevron list-toggle__chevron--right'
                 : 'list-toggle__chevron list-toggle__chevron--left'
             }
           />

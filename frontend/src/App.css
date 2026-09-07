@@ -287,6 +287,55 @@
   overflow: hidden;
 }
 
+.offer-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.offer-list__count {
+  font-family: var(--heading);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #7b879b;
+}
+
+.offer-list__publish {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 11px;
+  padding: 7px 12px;
+
+  background: #fff;
+  border: 2px solid var(--bg);
+  color: var(--bg);
+  border-radius: 6px;
+
+  text-decoration: none;
+  white-space: nowrap;
+
+  transition: background-color 0.15s ease;
+}
+
+.offer-list__publish:hover {
+  background: #eef1f7;
+}
+
+.offer-list__publish::before {
+  content: '+';
+  font-size: 13px;
+  line-height: 1;
+}
+
 
 /* =========================================================
    OFFER CARDS
@@ -350,7 +399,14 @@
   font-size: 12px;
   line-height: 1.55;
 
-  color: #68748a;
+  color: black;
+}
+
+.offer-card,
+.offer-card:visited,
+.offer-card:hover,
+.offer-card:active {
+  color: black;
 }
 
 
@@ -1393,5 +1449,158 @@
 
   .home-footer div {
     flex-wrap: wrap;
+  }
+}
+
+.publish-offer {
+  width: min(900px, 100%);
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.publish-offer h1 {
+  margin: 0 0 8px;
+  font-family: var(--heading);
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--bg);
+}
+
+.publish-offer__subtitle {
+  margin: 0 0 32px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: #68748a;
+}
+
+.publish-offer form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  background: #ffffff;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  padding: 32px;
+  box-shadow: 0 8px 24px rgba(15, 30, 56, 0.06);
+}
+
+.publish-offer label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--heading);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #5a6785;
+}
+
+.publish-offer input,
+.publish-offer textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 1px solid #d7dbe4;
+  border-radius: 6px;
+  background: #fff;
+  color: #0f1e38;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.publish-offer input::placeholder,
+.publish-offer textarea::placeholder {
+  color: #a2acbe;
+}
+
+.publish-offer input:focus-visible,
+.publish-offer textarea:focus-visible {
+  outline: none;
+  border-color: var(--bg);
+  box-shadow: 0 0 0 3px rgba(27, 58, 107, 0.12);
+}
+
+.publish-offer textarea {
+  min-height: 160px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.publish-offer .form-error {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: #b3261e;
+  background: #fdecea;
+  border: 1px solid #f4c7c3;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.publish-offer button[type='submit'] {
+  align-self: flex-start;
+  margin-top: 8px;
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 22px;
+  background: #fff;
+  border: 2px solid var(--bg);
+  color: var(--bg);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.publish-offer button[type='submit']:hover:not(:disabled) {
+  background: #eef2f7;
+}
+
+.publish-offer button[type='submit']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 800px) {
+  .publish-offer {
+    padding: 36px 20px;
+  }
+
+  .publish-offer form {
+    padding: 24px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+  .publish-offer {
+    padding: 28px 16px;
+  }
+
+  .publish-offer h1 {
+    font-size: 26px;
+  }
+
+  .publish-offer form {
+    padding: 20px;
+    gap: 16px;
+    border-radius: 8px;
+  }
+
+  .publish-offer button[type='submit'] {
+    align-self: stretch;
+    text-align: center;
   }
 }

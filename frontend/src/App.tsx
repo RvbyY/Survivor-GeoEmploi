@@ -8,6 +8,8 @@ import Login from './pages/Login'
 import Layout from './Layout'
 import MapPage from './pages/Map'
 import OfferDetail from './pages/Offerdetail'
+import Companyroute from './components/Companyroute'
+import Publishoffer from './pages/Publishoffer'
 
 function App() {
   return (
@@ -21,6 +23,14 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/map" element={<MapPage />} />
             <Route path="/offres/:id" element={<OfferDetail />} />
+            <Route
+              path="/publier"
+              element={
+                <Companyroute>
+                  <Publishoffer />
+                </Companyroute>
+              }
+            />
           </Route>
         </Routes>
       </BrowserRouter>

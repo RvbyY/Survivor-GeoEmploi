@@ -1,33 +1,49 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 
-type AuthContextValue = {
+type AccountType = 'jobseeker' | 'employer'
+
+interface AuthUser {
+  email: string
+  name: string
+  companyName: string | null
+}
+
+interface AuthContextType {
   isLoggedIn: boolean
-  login: () => void
+  accountType: AccountType | null
+  user: AuthUser | null
+  login: (accountType: AccountType, user: AuthUser) => void
   logout: () => void
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null)
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [accountType, setAccountType] = useState<AccountType | null>(null)
+  const [user, setUser] = useState<AuthUser | null>(null)
+
+  const login = (type: AccountType, userData: AuthUser) => {
+    setIsLoggedIn(true)
+    setAccountType(type)
+    setUser(userData)
+  }
+
+  const logout = () => {
+    setIsLoggedIn(false)
+    setAccountType(null)
+    setUser(null)
+  }
 
   return (
-    <AuthContext.Provider
-      value={{
-        isLoggedIn,
-        login: () => setIsLoggedIn(true), //TODO change when backend up
-        logout: () => setIsLoggedIn(false),
-      }}
-    >
+    <AuthContext.Provider value={{ isLoggedIn, accountType, user, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used inside an AuthProvider')
-  }
-  return context
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider')
+  return ctx
 }
