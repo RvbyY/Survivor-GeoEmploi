@@ -12,6 +12,7 @@ import (
 	"backend/handlers"
 	"backend/middleware"
 	_ "github.com/lib/pq"
+  "github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -50,20 +51,21 @@ func main() {
 	}
 	db = conn
 	handlers.DB = conn
-	defer db.Close()
+    defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("Error connecting to the database: %v", err)
-	}
-	fmt.Println("Connected to the PostgreSQL database")
+    err = db.Ping()
+    if err != nil {
+        log.Fatalf("Error connecting to the database: %v", err)
+    }
+    fmt.Println("Connected to the PostgreSQL database")
 
-	http.HandleFunc("/users", getUsers)
-	http.HandleFunc("/users/add", addUser)
-	http.HandleFunc("/users/update", updateUser)
-	http.HandleFunc("/users/delete", deleteUser)
+    http.HandleFunc("/users", getUsers)
+    http.HandleFunc("/users/add", addUser)
+    http.HandleFunc("/users/update", middleware.AuthCheck(updateUser))
+    http.HandleFunc("/users/delete", middleware.AuthCheck(deleteUser))
 	http.HandleFunc("/offer/get", handlers.GetOffer)
-	http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
+    http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
+    http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
 	http.HandleFunc("/health", Health)
 	http.HandleFunc("/auth/login", loginHandler)
 	http.HandleFunc("/auth/register", registerHandler)
@@ -152,6 +154,19 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
+	userID := int(userIDFloat)
+
 	var user User
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
@@ -159,100 +174,46 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("UPDATE users SET name=$1, email=$2 WHERE id=$3", user.Name, user.Email, user.ID)
+	result, err := db.Exec("UPDATE users SET name=$1, email=$2 WHERE id=$3", user.Name, user.Email, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	fmt.Fprintf(w, "User updated successfully")
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	fmt.Fprint(w, "User updated successfully")
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		http.Error(w, "ID parameter is required", http.StatusBadRequest)
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	_, err := db.Exec("DELETE FROM users WHERE id=$1", id)
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
+
+	userID := int(userIDFloat)
+	result, err := db.Exec("DELETE FROM users WHERE id=$1", userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "user not found", http.StatusNotFound)
 		return
 	}
 
 	fmt.Fprintf(w, "User deleted successfully")
-}
-
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	var credentials struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
-		return
-	}
-
-	var passwordHash string
-	var user User
-
-	err := db.QueryRow(
-		"SELECT id, name, email, account_type, company_name, password_hash FROM users WHERE email = $1",
-		credentials.Email,
-	).Scan(&user.ID, &user.Name, &user.Email, &user.AccountType, &user.CompanyName, &passwordHash)
-
-	if err != nil || bcrypt.CompareHashAndPassword(
-		[]byte(passwordHash),
-		[]byte(credentials.Password),
-	) != nil {
-		http.Error(w, "invalid credentials", http.StatusUnauthorized)
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]any{
-		"user": user,
-	})
-}
-
-func registerHandler(w http.ResponseWriter, r *http.Request) {
-	var registration struct {
-		Name        string `json:"name"`
-		Email       string `json:"email"`
-		Password    string `json:"password"`
-		AccountType string `json:"accountType"`
-		CompanyName string `json:"companyName"`
-	}
-
-	if err := json.NewDecoder(r.Body).Decode(&registration); err != nil {
-		http.Error(w, "invalid request", http.StatusBadRequest)
-		return
-	}
-
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(registration.Password), bcrypt.DefaultCost)
-	if err != nil {
-		http.Error(w, "could not secure password", http.StatusInternalServerError)
-		return
-	}
-
-	var user User
-	err = db.QueryRow(
-		`INSERT INTO users (name, email, password_hash, account_type, company_name)
-		 VALUES ($1, $2, $3, $4, NULLIF($5, ''))
-		 RETURNING id, name, email, account_type, company_name`,
-		registration.Name,
-		registration.Email,
-		string(passwordHash),
-		registration.AccountType,
-		registration.CompanyName,
-	).Scan(&user.ID, &user.Name, &user.Email, &user.AccountType, &user.CompanyName)
-	if err != nil {
-		http.Error(w, "could not create account", http.StatusConflict)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]any{"user": user})
 }

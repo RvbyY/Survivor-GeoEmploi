@@ -1,15 +1,20 @@
 package handlers
 
 import (
+	"backend/middleware"
 	"backend/models"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strconv"
+
 	"github.com/golang-jwt/jwt/v5"
-	"backend/middleware"
 )
 
 type CreateOfferRequest struct {
 	OfferName   string  `json:"offer_name"`
+	Description string  `json:"description"`
+	Address     string  `json:"address"`
 	CompanyName string  `json:"company_name"`
 	Salary      float64 `json:"salary"`
 	Latitude    float64 `json:"latitude"`
@@ -18,20 +23,20 @@ type CreateOfferRequest struct {
 }
 
 func GetOffer(w http.ResponseWriter, r *http.Request) {
-	rows, err := DB.Query("SELECT id, offer_name, company_name, company_id, salary, latitude, longitude, date, max_distance FROM offers")
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    defer rows.Close()
+	rows, err := DB.Query("SELECT id, offer_name, description, address, company_name, company_id, salary, latitude, longitude, date, max_distance FROM offers")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
 
 	var offers []models.Offer
 	for rows.Next() {
 		var o models.Offer
-		err := rows.Scan(&o.ID, &o.OfferName, &o.CompanyName, &o.CompanyId, &o.Salary, &o.Latitude, &o.Longitude, &o.Date, &o.MaxDistance)
+		err := rows.Scan(&o.ID, &o.OfferName, &o.Description, &o.Address, &o.CompanyName, &o.CompanyId, &o.Salary, &o.Latitude, &o.Longitude, &o.Date, &o.MaxDistance)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
-        	return
+			return
 		}
 		offers = append(offers, o)
 	}
@@ -71,11 +76,12 @@ func AddOffer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var offerID int
-	err = DB.QueryRow(`INSERT INTO offers (offer_name, company_name, company_id, salary, latitude, longitude, max_distance)
-					   VALUES ($1, $2, $3, $4, $5, $6, $7)
+	err = DB.QueryRow(`INSERT INTO offers (offer_name, description, address, company_name, company_id, salary, latitude, longitude, max_distance)
+					   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 					   RETURNING id`,
-					   offerForm.OfferName, offerForm.CompanyName, userID, offerForm.Salary, offerForm.Latitude, offerForm.Longitude, offerForm.MaxDistance).Scan(&offerID)
+		offerForm.OfferName, offerForm.Description, offerForm.Address, offerForm.CompanyName, userID, offerForm.Salary, offerForm.Latitude, offerForm.Longitude, offerForm.MaxDistance).Scan(&offerID)
 	if err != nil {
+		fmt.Println("DEBUG erreur insertion:", err)
 		http.Error(w, "Offer creation failed", http.StatusInternalServerError)
 		return
 	}
@@ -86,4 +92,38 @@ func AddOffer(w http.ResponseWriter, r *http.Request) {
 		"id":      offerID,
 		"message": "Offre créée avec succès",
 	})
+}
+
+func DeleteOffer(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+	userID := int(userIDFloat)
+
+	offerIDStr := r.PathValue("id")
+	offerID, err := strconv.Atoi(offerIDStr)
+	if err != nil {
+		http.Error(w, "invalid offer id", http.StatusBadRequest)
+		return
+	}
+
+	result, err := DB.Exec(`DELETE FROM offers WHERE id = $1 AND company_id = $2`, offerID, userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "offer not found or not yours", http.StatusForbidden)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
