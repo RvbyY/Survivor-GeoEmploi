@@ -1,8 +1,6 @@
 package main
 
 import (
-	"backend/handlers"
-	"backend/middleware"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -10,15 +8,19 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"backend/handlers"
+	"backend/middleware"
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
-    host     = "localhost"
-    port     = 5432
-    user     = "postgres"
-    password = "motdepasse123"
-    dbname   = "mydb"
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "motdepasse123"
+	dbname   = "mydb"
 )
 
 const appVersion = "0.2"
@@ -26,9 +28,11 @@ const appVersion = "0.2"
 var db *sql.DB
 
 type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Email       string  `json:"email"`
+	AccountType string  `json:"accountType"`
+	CompanyName *string `json:"companyName"`
 }
 
 type HealthResponse struct {
@@ -38,32 +42,46 @@ type HealthResponse struct {
 }
 
 func main() {
-    pgConnStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	pgConnStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
-    conn, err := sql.Open("postgres", pgConnStr)
-    if err != nil {
-        log.Fatalf("Error opening database connection: %v", err)
-    }
-    db = conn
+	conn, err := sql.Open("postgres", pgConnStr)
+	if err != nil {
+		log.Fatalf("Error opening database connection: %v", err)
+	}
+	db = conn
 	handlers.DB = conn
-    defer db.Close()
+	defer db.Close()
 
-    err = db.Ping()
-    if err != nil {
-        log.Fatalf("Error connecting to the database: %v", err)
-    }
-    fmt.Println("Connected to the PostgreSQL database")
+	err = db.Ping()
+	if err != nil {
+		log.Fatalf("Error connecting to the database: %v", err)
+	}
+	fmt.Println("Connected to the PostgreSQL database")
 
-    http.HandleFunc("/users", getUsers)
-    http.HandleFunc("/users/add", addUser)
-    http.HandleFunc("/users/update", updateUser)
-    http.HandleFunc("/users/delete", deleteUser)
+	http.HandleFunc("/users", getUsers)
+	http.HandleFunc("/users/add", addUser)
+	http.HandleFunc("/users/update", updateUser)
+	http.HandleFunc("/users/delete", deleteUser)
 	http.HandleFunc("/offer/get", handlers.GetOffer)
-    http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
+	http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
 	http.HandleFunc("/health", Health)
+	http.HandleFunc("/auth/login", loginHandler)
+	http.HandleFunc("/auth/register", registerHandler)
+	fmt.Println("Server is listening on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", withCORS(http.DefaultServeMux)))
+}
 
-    fmt.Println("Server is listening on port 8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func Health(w http.ResponseWriter, r *http.Request) {
@@ -72,23 +90,23 @@ func Health(w http.ResponseWriter, r *http.Request) {
 
 	dbStatus := "up"
 	err := db.PingContext(ctx)
-	if err != nil{
+	if err != nil {
 		dbStatus = "down"
 	}
 	overallStatus := "ok"
-	if dbStatus == "down"{
+	if dbStatus == "down" {
 		overallStatus = "degraded"
 	}
 	w.Header().Set("Content-Type", "application/json")
 
-	if overallStatus != "ok"{
+	if overallStatus != "ok" {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}
 	json.NewEncoder(w).Encode(HealthResponse{
-		Status: overallStatus,
-		Version: appVersion,
+		Status:   overallStatus,
+		Version:  appVersion,
 		Database: dbStatus,
 	})
 }
@@ -151,17 +169,90 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-    id := r.URL.Query().Get("id")
-    if id == "" {
-        http.Error(w, "ID parameter is required", http.StatusBadRequest)
-        return
-    }
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, "ID parameter is required", http.StatusBadRequest)
+		return
+	}
 
-    _, err := db.Exec("DELETE FROM users WHERE id=$1", id)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	_, err := db.Exec("DELETE FROM users WHERE id=$1", id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    fmt.Fprintf(w, "User deleted successfully")
+	fmt.Fprintf(w, "User deleted successfully")
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	var credentials struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	var passwordHash string
+	var user User
+
+	err := db.QueryRow(
+		"SELECT id, name, email, account_type, company_name, password_hash FROM users WHERE email = $1",
+		credentials.Email,
+	).Scan(&user.ID, &user.Name, &user.Email, &user.AccountType, &user.CompanyName, &passwordHash)
+
+	if err != nil || bcrypt.CompareHashAndPassword(
+		[]byte(passwordHash),
+		[]byte(credentials.Password),
+	) != nil {
+		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{
+		"user": user,
+	})
+}
+
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	var registration struct {
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		Password    string `json:"password"`
+		AccountType string `json:"accountType"`
+		CompanyName string `json:"companyName"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&registration); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(registration.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "could not secure password", http.StatusInternalServerError)
+		return
+	}
+
+	var user User
+	err = db.QueryRow(
+		`INSERT INTO users (name, email, password_hash, account_type, company_name)
+		 VALUES ($1, $2, $3, $4, NULLIF($5, ''))
+		 RETURNING id, name, email, account_type, company_name`,
+		registration.Name,
+		registration.Email,
+		string(passwordHash),
+		registration.AccountType,
+		registration.CompanyName,
+	).Scan(&user.ID, &user.Name, &user.Email, &user.AccountType, &user.CompanyName)
+	if err != nil {
+		http.Error(w, "could not create account", http.StatusConflict)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]any{"user": user})
 }
