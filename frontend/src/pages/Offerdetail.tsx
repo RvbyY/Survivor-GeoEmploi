@@ -1,20 +1,26 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/Authcontext'
-import mockListings from '../data/mockListings'
+import { useListings } from '../context/Listingscontext'
+import { useApplications } from '../context/Applicationscontext'
 
 export default function OfferDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { isLoggedIn } = useAuth()
 
-  const listing = mockListings.find((item) => item.id === Number(id))
+  const { isLoggedIn, user, accountType } = useAuth()
+  const { listings } = useListings()
+  const { applications, addApplication } = useApplications()
+
+  const listing = listings.find((item) => item.id === Number(id))
 
   if (!listing) {
     return (
       <div className="status-page">
         <h1>Offre introuvable</h1>
         <p>Cette offre n'existe plus ou a été retirée.</p>
+
         <div className="status-page__divider" />
+
         <Link to="/map">
           ← Retour aux offres
         </Link>
@@ -22,13 +28,43 @@ export default function OfferDetail() {
     )
   }
 
+  const alreadyApplied = Boolean(
+    isLoggedIn &&
+    user &&
+    applications.some(
+      (application) =>
+        application.listingId === listing.id &&
+        application.userEmail === user.email
+    )
+  )
+
   function handleApply() {
     if (!isLoggedIn) {
       navigate('/login')
       return
     }
-    // TODO: replace with a real call once the backend candidacy endpoint exists.
-    alert('Candidature envoyée (démo) !')
+
+    if (accountType !== 'jobseeker') {
+      alert('Seuls les candidats peuvent postuler à une offre.')
+      return
+    }
+
+    if (!user) {
+      return
+    }
+
+    if (!listing) {
+      return
+    }
+
+    const success = addApplication(listing.id, user.email)
+
+    if (!success) {
+      alert('Vous avez déjà postulé à cette offre.')
+      return
+    }
+
+    alert('Candidature envoyée !')
   }
 
   return (
@@ -38,12 +74,22 @@ export default function OfferDetail() {
           ← Retour aux offres
         </Link>
 
-        <p className="offer-detail__company">{listing.company}</p>
-        <h1>{listing.title}</h1>
-        <p className="offer-detail__summary">{listing.description}</p>
+        <p className="offer-detail__company">
+          {listing.company}
+        </p>
 
-        <button className="btn btn--primary offer-detail__apply" onClick={handleApply}>
-          Postuler
+        <h1>{listing.title}</h1>
+
+        <p className="offer-detail__summary">
+          {listing.description}
+        </p>
+
+        <button
+          className="btn btn--primary offer-detail__apply"
+          onClick={handleApply}
+          disabled={alreadyApplied}
+        >
+          {alreadyApplied ? 'Candidature envoyée' : 'Postuler'}
         </button>
       </main>
     </div>

@@ -14,6 +14,7 @@ interface AuthContextType {
   user: AuthUser | null
   login: (accountType: AccountType, user: AuthUser) => void
   logout: () => void
+  updateUser: (userData: AuthUser) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -29,6 +30,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData)
   }
 
+  const updateUser = (userData: AuthUser) => {
+    setUser(userData)
+  }
+
   const logout = () => {
     setIsLoggedIn(false)
     setAccountType(null)
@@ -36,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, accountType, user, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, accountType, user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,3 +1,5 @@
+import '../styles/Brandblock.css'
+
 type BrandBlockProps = {
   variant?: 'light' | 'dark'
 }

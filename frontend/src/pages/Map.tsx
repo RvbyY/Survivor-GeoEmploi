@@ -5,6 +5,7 @@ import CitySearchForm from '../components/Citysearchform'
 import { geocodeCity } from '../api/geocode'
 import { useListings } from '../context/Listingscontext'
 import { useEffect, useState } from 'react'
+import '../styles/Spinner.css'
 
 function MapPage() {
   const { listings } = useListings()

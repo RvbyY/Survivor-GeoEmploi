@@ -6,7 +6,7 @@ import mockListings from '../data/mockListings'
 import { useState } from 'react'
 
 function Header() {
-  const { isLoggedIn, logout } = useAuth()
+  const { isLoggedIn } = useAuth()
   const [listings] = useState<Listing[]>(mockListings)
 
   return (
@@ -27,12 +27,12 @@ function Header() {
 
       <div className="app-header__account">
         {isLoggedIn ? (
-          <button
+          <Link
             className="btn btn--secondary-on-dark"
-            onClick={logout}
+            to="/profil"
           >
-            Se déconnecter
-          </button>
+            Profil
+          </Link>
         ) : (
           <Link
             to="/login"

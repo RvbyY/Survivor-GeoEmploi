@@ -1,7 +1,7 @@
 import { useState, type SubmitEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import BrandBlock from '../components/Brandblock'
-import '../Auth.css'
+import '../styles/Auth.css'
 import { useAuth } from '../context/Authcontext'
 
 type AccountType = 'jobseeker' | 'employer'
