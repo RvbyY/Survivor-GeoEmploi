@@ -147,8 +147,8 @@ function Home() {
           </div>
 
           <div>
-            <strong>0€</strong>
-            <span>pour consulter les offres</span>
+            <strong>100%</strong>
+            <span>gratuit</span>
           </div>
         </div>
       </section>
