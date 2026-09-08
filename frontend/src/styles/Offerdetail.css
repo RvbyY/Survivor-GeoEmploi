@@ -1,0 +1,91 @@
+.offer-detail {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  background: #f4f6fa;
+  padding: 48px 24px;
+}
+
+.offer-detail__content {
+  width: min(760px, 100%);
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  padding: 40px 44px;
+  box-shadow: 0 8px 24px rgba(15, 30, 56, 0.08);
+}
+
+/* ---- Back link ---- */
+
+.offer-detail__back {
+  display: inline-block;
+  margin-bottom: 40px;
+
+  font-family: var(--heading);
+  font-weight: 500;
+  font-size: 14px;
+  color: #5a6785;
+  text-decoration: none;
+
+  transition: color 0.15s ease;
+}
+
+.offer-detail__back:hover {
+  color: var(--bg);
+}
+
+/* ---- Company ---- */
+
+.offer-detail__company {
+  margin: 0 0 8px;
+
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: #5a6785;
+
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---- Title ---- */
+
+.offer-detail h1 {
+  margin: 0 0 16px;
+
+  font-family: var(--heading);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
+  color: #0f1e38;
+}
+
+/* ---- Description ---- */
+
+.offer-detail__summary {
+  margin: 0;
+
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.7;
+  color: #4a5570;
+}
+
+/* ---- Apply button ---- */
+
+.offer-detail__apply {
+  margin-top: 32px;
+  min-width: 140px;
+  padding: 10px 20px;
+  font-size: 13px;
+}
+
+.offer-detail__date {
+  margin: 0 0 20px;
+
+  font-family: var(--sans);
+  font-size: 13px;
+  color: #8993a5;
+}

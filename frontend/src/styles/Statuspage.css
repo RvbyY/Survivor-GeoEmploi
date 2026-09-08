@@ -1,0 +1,42 @@
+.status-page {
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  padding: 24px;
+}
+
+.status-page .brand-block {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+}
+
+.status-page h1 {
+  font-size: 28px;
+  letter-spacing: -0.3px;
+}
+
+.status-page p {
+  font-family: var(--sans);
+  font-size: 16px;
+  color: var(--text);
+  max-width: 40ch;
+}
+
+.status-page a {
+  margin-top: 8px;
+  font-family: var(--heading);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-h);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.status-page a:hover {
+  text-decoration: none;
+}
