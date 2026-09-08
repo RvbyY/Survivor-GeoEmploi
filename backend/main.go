@@ -10,13 +10,14 @@ import (
 	"backend/handlers"
 	"time"
 	"context"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
     host     = "localhost"
     port     = 5432
     user     = "postgres"
-    password = "motdepasse123"
+	password = "motdepasse123"
     dbname   = "mydb"
 )
 
@@ -59,7 +60,7 @@ func main() {
     http.HandleFunc("/users/delete", deleteUser)
 	http.HandleFunc("/offers", handlers.GetOffer)
 	http.HandleFunc("/health", Health)
-
+	http.HandleFunc("/auth/login", loginHandler)
     fmt.Println("Server is listening on port 8080")
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -162,4 +163,37 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
     }
 
     fmt.Fprintf(w, "User deleted successfully")
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	var credentials struct {
+		Email string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	var passwordHash string
+	var user User
+
+	err := db.QueryRow(
+		"SELECT id, name, email, password_hash FROM users WHERE email = $1",
+		credentials.Email,
+	).Scan(&user.ID, &user.Name, &user.Email, &passwordHash)
+
+	if err != nil || bcrypt.CompareHashAndPassword(
+		[]byte(passwordHash),
+		[]byte(credentials.Password),
+	) != nil {
+		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]any{
+		"user": user,
+		"token": "generated-token",
+	})
 }

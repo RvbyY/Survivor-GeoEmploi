@@ -53,16 +53,29 @@ export default function Login() {
     return problems
   }
 
-  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
 
     const problems = validate()
     setErrors(problems)
     if (problems.length > 0) return
 
-    // TODO: replace with a real call once the backend auth endpoint exists.
-    console.log('Submitting', { mode, accountType, form })
-    login()
+    const response = await fetch('http://localhost:8080/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: form.email,
+        password: form.password,
+      }),
+    })
+
+    if (!response.ok) {
+      setErrors(['E-mail ou mot de passe incorrect.'])
+      return
+    }
+
+    const data = await response.json()
+    login(data.token)
     navigate('/')
   }
 
