@@ -11,6 +11,16 @@ type MapProps = {
   isListOpen: boolean
 }
 
+function formatRelativeDate(iso: string): string {
+  const date = new Date(iso)
+  if (isNaN(date.getTime())) return ''
+
+  const diffMs = date.getTime() - Date.now()
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24))
+  const rtf = new Intl.RelativeTimeFormat('fr', { numeric: 'auto' })
+  return rtf.format(diffDays, 'day')
+}
+
 const listingIcon = L.divIcon({
   className: 'listing-marker',
   html: `
@@ -112,6 +122,7 @@ export default function MapComponent({ listings, center, hoveredId, onHoverMarke
           <p class="listing-popup__company">${listing.company}</p>
           <p class="listing-popup__title">${listing.title}</p>
           <p class="listing-popup__summary">${summaryPreview}</p>
+          <p class="listing-popup__date">${formatRelativeDate(listing.date)}</p>
           <button class="btn btn--primary listing-popup__details" data-listing-id="${listing.id}">
             Voir les détails
           </button>

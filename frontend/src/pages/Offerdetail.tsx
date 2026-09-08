@@ -3,6 +3,12 @@ import { useAuth } from '../context/Authcontext'
 import { useListings } from '../context/Listingscontext'
 import { useApplications } from '../context/Applicationscontext'
 
+function formatFullDate(iso: string): string {
+  const date = new Date(iso)
+  if (isNaN(date.getTime())) return ''
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
 export default function OfferDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -82,6 +88,11 @@ export default function OfferDetail() {
 
         <p className="offer-detail__summary">
           {listing.description}
+        </p>
+
+        <br />
+        <p className="offer-detail__date">
+          Publié le {formatFullDate(listing.date)}
         </p>
 
         <button

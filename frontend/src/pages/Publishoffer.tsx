@@ -27,14 +27,15 @@ export default function Publishoffer() {
       }
       const [lat, lng] = result
 
-      addListing({
-        title,
-        company: user?.companyName ?? 'Entreprise',
-        description,
-        address,
-        lat,
-        lng,
-      })
+    addListing({
+      title,
+      company: user?.companyName ?? 'Entreprise',
+      description,
+      address,
+      date: new Date().toISOString(),
+      lat,
+      lng,
+    })
 
       navigate('/map')
     } finally {

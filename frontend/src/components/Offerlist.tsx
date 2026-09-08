@@ -9,6 +9,16 @@ type OfferListProps = {
   collapsed: boolean
 }
 
+function formatRelativeDate(iso: string): string {
+  const date = new Date(iso)
+  if (isNaN(date.getTime())) return ''
+
+  const diffMs = date.getTime() - Date.now()
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24))
+  const rtf = new Intl.RelativeTimeFormat('fr', { numeric: 'auto' })
+  return rtf.format(diffDays, 'day')
+}
+
 function OfferList({ listings, hoveredId, onHover, collapsed }: OfferListProps) {
   const { isLoggedIn, accountType } = useAuth();
 
@@ -35,7 +45,9 @@ function OfferList({ listings, hoveredId, onHover, collapsed }: OfferListProps) 
           onMouseEnter={() => onHover(listing.id)}
           onMouseLeave={() => onHover(null)}
         >
-          <p className="offer-card__company">{listing.company}</p>
+          <p className="offer-card__company">
+            {listing.company} · {formatRelativeDate(listing.date)}
+          </p>
           <p className="offer-card__title">{listing.title}</p>
           <p className="offer-card__description">{listing.description}</p>
         </Link>
