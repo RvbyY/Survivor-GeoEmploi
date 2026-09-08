@@ -29,7 +29,7 @@ export default function Login() {
   const [accountType, setAccountType] = useState<AccountType>('jobseeker')
   const [form, setForm] = useState<FormState>(initialForm)
   const [errors, setErrors] = useState<string[]>([])
-  
+
 
   function updateField(field: keyof FormState, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -54,21 +54,45 @@ export default function Login() {
     return problems
   }
 
-  function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault()
 
     const problems = validate()
     setErrors(problems)
     if (problems.length > 0) return
 
-    // TODO: replace with a real call once the backend auth endpoint exists.
-    console.log('Submitting', { mode, accountType, form })
-    login(accountType, {
-      email: form.email,
-      name: form.name,
-      companyName: accountType === 'employer' ? form.companyName : null,
-    })
-    navigate('/')
+    try {
+      const response = await fetch(`http://localhost:8080/auth/${mode === 'signup' ? 'register' : 'login'}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          mode === 'signup'
+            ? {
+                name: form.name,
+                email: form.email,
+                password: form.password,
+                accountType,
+                companyName: form.companyName,
+              }
+            : { email: form.email, password: form.password },
+        ),
+      })
+
+      if (!response.ok) {
+        setErrors([
+          mode === 'signup'
+            ? 'Impossible de créer ce compte. Vérifiez les informations saisies.'
+            : 'E-mail ou mot de passe incorrect.',
+        ])
+        return
+      }
+
+      const data = await response.json()
+      login(data.user.accountType, data.user)
+      navigate('/')
+    } catch {
+      setErrors(['Le serveur est inaccessible. Vérifiez que le backend est démarré.'])
+    }
   }
 
   return (
