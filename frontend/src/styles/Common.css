@@ -1,0 +1,53 @@
+.app-shell {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.btn {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 11px;
+
+  padding: 4px 10px;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+  text-decoration: none;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.btn--primary {
+  background: #fff;
+  color: var(--bg);
+  border: 2px solid var(--bg);
+}
+
+.btn--primary:hover {
+  background: #eef1f7;
+}
+
+.btn--secondary {
+  background: transparent;
+  color: var(--bg);
+  border: 2px solid transparent;
+}
+
+.btn--secondary:hover {
+  border-color: #dfe3ea;
+}
+
+.btn--secondary-on-dark {
+  background: transparent;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn--secondary-on-dark:hover {
+  border-color: #fff;
+}
+

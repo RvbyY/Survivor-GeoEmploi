@@ -15,7 +15,7 @@ const listingIcon = L.divIcon({
   className: 'listing-marker',
   html: `
     <svg width="28" height="36" viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg">
-      <path d="M14 0C6.3 0 0 6.3 0 14c0 9.8 14 22 14 22s14-12.2 14-22C28 6.3 21.7 0 14 0z" fill="#1B3A6B"/>
+      <path d="M14 0C6.3 0 0 6.3 0 14c0 9.8 14 22 14 22s14-12.2 14-22C28 6.3 21.7 0 14 0z" fill="#58268e"/>
       <circle cx="14" cy="14" r="5.5" fill="#ffffff"/>
     </svg>
   `,

@@ -1,3 +1,5 @@
+import '../styles/Statuspage.css'
+
 export default function ServerError() {
   return (
     <div className="status-page">

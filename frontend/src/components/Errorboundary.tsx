@@ -1,6 +1,7 @@
 // src/components/ErrorBoundary.tsx
 import { Component, type ReactNode } from 'react'
 import ServerError from '../pages/Servererror'
+import '../styles/Statuspage.css'
 
 type Props = { children: ReactNode }
 type State = { hasError: boolean }

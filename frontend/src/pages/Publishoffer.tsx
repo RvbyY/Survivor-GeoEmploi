@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/Authcontext';
 import { useListings } from '../context/Listingscontext';
 import { geocodeCity } from '../api/geocode';
-import '../App.css'
 
 export default function Publishoffer() {
   const { user } = useAuth();

@@ -1,3 +1,5 @@
+import '../styles/Statuspage.css'
+
 export default function NotFound() {
   return (
     <div className="status-page">
