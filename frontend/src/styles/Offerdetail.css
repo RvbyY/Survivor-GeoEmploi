@@ -81,3 +81,11 @@
   padding: 10px 20px;
   font-size: 13px;
 }
+
+.offer-detail__date {
+  margin: 0 0 20px;
+
+  font-family: var(--sans);
+  font-size: 13px;
+  color: #8993a5;
+}
