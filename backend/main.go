@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"time"
 	_ "github.com/lib/pq"
+    "github.com/golang-jwt/jwt/v5"
 )
 
 const (
@@ -56,10 +57,11 @@ func main() {
 
     http.HandleFunc("/users", getUsers)
     http.HandleFunc("/users/add", addUser)
-    http.HandleFunc("/users/update", updateUser)
-    http.HandleFunc("/users/delete", deleteUser)
+    http.HandleFunc("/users/update", middleware.AuthCheck(updateUser))
+    http.HandleFunc("/users/delete", middleware.AuthCheck(deleteUser))
 	http.HandleFunc("/offer/get", handlers.GetOffer)
     http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
+    http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
 	http.HandleFunc("/health", Health)
 
     fmt.Println("Server is listening on port 8080")
@@ -134,34 +136,66 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
-    var user User
-    err := json.NewDecoder(r.Body).Decode(&user)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-    _, err = db.Exec("UPDATE users SET name=$1, email=$2 WHERE id=$3", user.Name, user.Email, user.ID)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
+	userID := int(userIDFloat)
 
-    fmt.Fprintf(w, "User updated successfully")
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result, err := db.Exec("UPDATE users SET name=$1, email=$2 WHERE id=$3", user.Name, user.Email, userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	fmt.Fprint(w, "User updated successfully")
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
-    id := r.URL.Query().Get("id")
-    if id == "" {
-        http.Error(w, "ID parameter is required", http.StatusBadRequest)
-        return
-    }
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(jwt.MapClaims)
+	if !ok {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
 
-    _, err := db.Exec("DELETE FROM users WHERE id=$1", id)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		http.Error(w, "invalid token", http.StatusUnauthorized)
+		return
+	}
 
-    fmt.Fprintf(w, "User deleted successfully")
+	userID := int(userIDFloat)
+	result, err := db.Exec("DELETE FROM users WHERE id=$1", userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		http.Error(w, "user not found", http.StatusNotFound)
+		return
+	}
+
+	fmt.Fprintf(w, "User deleted successfully")
 }

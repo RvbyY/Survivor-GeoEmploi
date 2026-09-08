@@ -11,6 +11,8 @@ CREATE TABLE users (
 CREATE TABLE offers (
     id SERIAL PRIMARY KEY,
     offer_name VARCHAR(255) NOT NULL,
+    description VARCHAR(255),
+    address VARCHAR(255) NOT NULL,
     company_name VARCHAR(255) NOT NULL,
     company_id INTEGER NOT NULL REFERENCES users(id),
     salary DOUBLE PRECISION NOT NULL,
