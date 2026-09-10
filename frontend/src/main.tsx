@@ -9,17 +9,25 @@ import './styles/Map.css'
 import './styles/Offerdetail.css'
 import './styles/Publishoffer.css'
 import './styles/Profile.css'
+import './styles/Repport.css'
+import './styles/Admindashboard.css'
 import App from './App.tsx'
 import { AuthProvider } from './context/Authcontext.tsx'
 import { ListingsProvider } from './context/Listingscontext.tsx'
 import { ApplicationsProvider } from './context/Applicationscontext.tsx'
+import { ReportsProvider } from './context/Reportscontext.tsx'
+import { AccountsProvider } from './context/Accountscontext.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <ListingsProvider>
         <ApplicationsProvider>
-          <App />
+          <AccountsProvider>
+            <ReportsProvider>
+              <App />
+            </ReportsProvider>
+          </AccountsProvider>
         </ApplicationsProvider>
       </ListingsProvider>
     </AuthProvider>

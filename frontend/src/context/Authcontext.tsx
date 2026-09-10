@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 
-type AccountType = 'jobseeker' | 'employer'
+type AccountType = 'jobseeker' | 'employer' | 'admin'
 
 interface AuthUser {
   email: string

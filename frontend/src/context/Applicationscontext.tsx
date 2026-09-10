@@ -13,6 +13,8 @@ export type Application = {
 interface ApplicationsContextType {
   applications: Application[]
   addApplication: (listingId: number, userEmail: string) => boolean
+  updateApplicationStatus: (id: number, status: ApplicationStatus) => void
+  removeApplication: (id: number) => void
 }
 
 const ApplicationsContext = createContext<ApplicationsContextType | undefined>(
@@ -46,11 +48,21 @@ export function ApplicationsProvider({ children }: { children: ReactNode }) {
     return true
   }
 
+  const updateApplicationStatus = (id: number, status: ApplicationStatus) => {
+    setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)))
+  }
+
+  const removeApplication = (id: number) => {
+    setApplications((prev) => prev.filter((a) => a.id !== id))
+  }
+
   return (
     <ApplicationsContext.Provider
       value={{
         applications,
         addApplication,
+        updateApplicationStatus,
+        removeApplication
       }}
     >
       {children}

@@ -11,6 +11,8 @@ import Companyroute from './components/Companyroute'
 import Publishoffer from './pages/Publishoffer'
 import Logedinroute from './components/Logedinroute'
 import Profil from './pages/Profil'
+import AdminDashboard from './pages/Admindashboard'
+import AdminRoute from './components/Adminroute'
 
 function App() {
   return (
@@ -38,6 +40,14 @@ function App() {
                 <Logedinroute>
                   <Profil />
                 </Logedinroute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
               }
             />
           </Route>
