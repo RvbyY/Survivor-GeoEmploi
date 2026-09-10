@@ -5,12 +5,11 @@
 }
 
 .admin-dashboard h1 {
-  margin: 0 0 24px;
   font-family: var(--heading);
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.4px;
-  color: var(--bg);
+  color: var(--text);
 }
 
 .admin-error {
@@ -150,6 +149,24 @@
 .admin-table a.btn {
   font-size: 11px;
   padding: 6px 10px;
+}
+
+.admin-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 24px;
+
+}
+
+.admin-header h1 {
+
+  margin: 0;
+
 }
 
 /* ---- Mobile ---- */

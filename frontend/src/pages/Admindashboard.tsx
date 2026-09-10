@@ -4,6 +4,7 @@ import { useListings } from '../context/Listingscontext'
 import { useApplications, type ApplicationStatus } from '../context/Applicationscontext'
 import { useAccounts, type AccountType } from '../context/Accountscontext'
 import { useReports } from '../context/Reportscontext'
+import { useAuth } from '../context/Authcontext'
 
 type Tab = 'offers' | 'applications' | 'accounts' | 'reports'
 
@@ -13,11 +14,20 @@ export default function AdminDashboard() {
   const { applications, updateApplicationStatus, removeApplication } = useApplications()
   const { accounts, isLoading, error, updateAccountType, removeAccount } = useAccounts()
   const { reports, updateReportStatus, removeReport } = useReports()
+  const { logout } = useAuth();
 
   return (
     <div className="admin-dashboard">
-      <h1>Administration</h1>
+      <div className="admin-header">
+        <h1>Administration</h1>
 
+        <button
+          className="btn btn--primary"
+          onClick={logout}
+        >
+          Déconnexion
+        </button>
+      </div>
       <div className="admin-tabs">
         <button className={tab === 'offers' ? 'admin-tab admin-tab--active' : 'admin-tab'} onClick={() => setTab('offers')}>
           Offres ({listings.length})
