@@ -39,7 +39,7 @@ export default function AdminDashboard() {
           Comptes ({accounts.length})
         </button>
         <button className={tab === 'reports' ? 'admin-tab admin-tab--active' : 'admin-tab'} onClick={() => setTab('reports')}>
-          Signalements ({reports.filter((r) => r.status === 'pending').length})
+          Signalements ({reports.length})
         </button>
       </div>
 

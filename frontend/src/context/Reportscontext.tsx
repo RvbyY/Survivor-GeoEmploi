@@ -33,31 +33,31 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null)
 
   const refresh = async () => {
-    setIsLoading(true)
-    setError(null)
+  setIsLoading(true)
+  setError(null)
 
-    try {
-      const response = await fetch(`${API_URL}/reports`, {
-        headers: token
-          ? { Authorization: `Bearer ${token}` }
-          : {},
-      })
+  try {
+    const response = await fetch(`${API_URL}/offer/report/get`, {
+      headers: token
+        ? { Authorization: `Bearer ${token}` }
+        : {},
+    })
 
-      if (!response.ok) {
-        throw new Error('Failed to load reports')
-      }
+    if (!response.ok) {
+      throw new Error('Failed to load reports')
+    }
 
-      const data = await response.json()
+    const data = await response.json()
 
-      setReports(
-        data.map((r: any) => ({
-          id: r.id,
-          offerId: r.offer_id ?? r.offerId,
-          reason: r.reason,
-          comment: r.comment ?? '',
-          status: r.status ?? 'pending',
-        }))
-      )
+    setReports(
+      data.map((r: any) => ({
+        id: r.id,
+        offerId: r.offer_id ?? r.offerId,
+        reason: r.reason,
+        comment: r.message ?? r.comment ?? '',
+        status: r.status ?? 'pending',
+      }))
+    )
     } catch (err) {
       setError(
         err instanceof Error
@@ -112,26 +112,6 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
     id: number,
     status: ReportStatus
   ) => {
-    if (!token) {
-      throw new Error('Not authenticated')
-    }
-
-    const response = await fetch(
-      `${API_URL}/reports/${id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      }
-    )
-
-    if (!response.ok) {
-      throw new Error('Failed to update report')
-    }
-
     setReports((prev) =>
       prev.map((report) =>
         report.id === id
