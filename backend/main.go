@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"backend/handlers"
@@ -18,11 +20,12 @@ import (
 )
 
 const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "motdepasse123"
-	dbname   = "mydb"
+	defaultDBHost     = "localhost"
+	defaultDBPort     = 5432
+	defaultDBUser     = "postgres"
+	defaultDBPassword = "motdepasse123"
+	defaultDBName     = "mydb"
+	defaultServerPort = 8080
 )
 
 const appVersion = "0.2"
@@ -49,7 +52,14 @@ type HealthResponse struct {
 }
 
 func main() {
-	pgConnStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	dbHost := envString("DB_HOST", defaultDBHost)
+	dbPort := envInt("DB_PORT", defaultDBPort)
+	dbUser := envString("DB_USER", defaultDBUser)
+	dbPassword := envString("DB_PASSWORD", defaultDBPassword)
+	dbName := envString("DB_NAME", defaultDBName)
+	dbSSLMode := envString("DB_SSLMODE", "disable")
+	serverPort := envInt("SERVER_PORT", defaultServerPort)
+	pgConnStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=%s", dbHost, dbPort, dbUser, dbPassword, dbName, dbSSLMode)
 
 	conn, err := sql.Open("postgres", pgConnStr)
 	if err != nil {
@@ -81,7 +91,22 @@ func main() {
 	http.HandleFunc("/auth/login", loginHandler)
 	http.HandleFunc("/auth/register", registerHandler)
 	fmt.Println("Server is listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", withCORS(http.DefaultServeMux)))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", serverPort), withCORS(http.DefaultServeMux)))
+}
+
+func envString(name, fallback string) string {
+	if value := os.Getenv(name); value != "" {
+		return value
+	}
+	return fallback
+}
+
+func envInt(name string, fallback int) int {
+	value, err := strconv.Atoi(os.Getenv(name))
+	if err != nil || value <= 0 {
+		return fallback
+	}
+	return value
 }
 
 func withCORS(next http.Handler) http.Handler {
