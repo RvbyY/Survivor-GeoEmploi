@@ -33,6 +33,7 @@ type User struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
 	Email       string  `json:"email"`
+	Password 	string	`json:"password"`
 	AccountType string  `json:"accountType"`
 	CompanyName *string `json:"companyName"`
 }
@@ -125,7 +126,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var user User
-		err := rows.Scan(&user.ID, &user.Name, &user.Email)
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.AccountType, &user.CompanyName)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -150,7 +151,7 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO users (name, email) VALUES ($1, $2)", user.Name, user.Email)
+	_, err = db.Exec("INSERT INTO users (name, email, password, accountType, companyName) VALUES ($1, $2, $3, $4, $5)", user.Name, user.Email, user.Password, user.AccountType, user.CompanyName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -181,7 +182,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Exec("UPDATE users SET name=$1, email=$2 WHERE id=$3", user.Name, user.Email, userID)
+	result, err := db.Exec("UPDATE users SET name=$1, email=$2, accountType=$4, companyName=$5 WHERE password=$3, id=$6", user.Name, user.Email, user.Password, user.AccountType, user.CompanyName, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
