@@ -36,5 +36,6 @@ CREATE TABLE reports (
     offer_id INTEGER NOT NULL REFERENCES offers(id),
     candidate_id INTEGER NOT NULL REFERENCES users(id),
     reason VARCHAR(255) NOT NULL,
+    message VARCHAR(255),
     date TIMESTAMP DEFAULT NOW()
 );

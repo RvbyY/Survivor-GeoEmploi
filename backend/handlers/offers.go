@@ -24,6 +24,7 @@ type CreateOfferRequest struct {
 
 type ReportOfferRequest struct {
 	ReportReason string `json:"report_reason"`
+	ReportMessage string `json:"report_message"`
 }
 
 func GetOffer(w http.ResponseWriter, r *http.Request) {
@@ -185,10 +186,10 @@ func ReportsOffer(w http.ResponseWriter, r *http.Request) {
 
 	var reportID int
 	err = DB.QueryRow(`
-		INSERT INTO reports (offer_id, candidate_id, reason)
-		VALUES ($1, $2, $3)
+		INSERT INTO reports (offer_id, candidate_id, reason, message)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
-	`, offerID, userID, req.ReportReason).Scan(&reportID)
+	`, offerID, userID, req.ReportReason, req.ReportMessage).Scan(&reportID)
 
 	if err != nil {
 		fmt.Println("DEBUG erreur report:", err)
