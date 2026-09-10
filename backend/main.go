@@ -14,8 +14,6 @@ import (
 	"backend/handlers"
 	"backend/middleware"
 
-	"github.com/golang-jwt/jwt/v5"
-	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
