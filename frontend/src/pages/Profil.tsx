@@ -264,13 +264,28 @@ export default function Profil() {
 
                      <div className="profile-list__actions">
 
-                        <span className="profile-badge">
-                          {listingApplications.length}{' '}
-                          candidature
-                          {listingApplications.length > 1
-                            ? 's'
-                            : ''}
-                        </span>
+                        <div className="profile-applications">
+                          {listingApplications.length === 0 ? (
+                            <span className="profile-badge">
+                              Aucune candidature
+                            </span>
+                          ) : (
+                            listingApplications.map((application) => (
+                              <div key={application.id} className="profile-application">
+                                <strong>{application.userName}</strong>
+                                <span>{application.userEmail}</span>
+
+                                <span
+                                  className={`profile-status profile-status--${application.status}`}
+                                >
+                                  {application.status === 'pending' && 'En attente'}
+                                  {application.status === 'accepted' && 'Acceptée'}
+                                  {application.status === 'rejected' && 'Refusée'}
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
 
                         <Link
                           to={`/offres/${listing.id}`}

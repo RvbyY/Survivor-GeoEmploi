@@ -10,7 +10,11 @@ const REPORT_REASONS = [
   'Autre',
 ]
 
-export default function ReportOffer({ offerId }: { offerId: number }) {
+export default function ReportOffer({
+  offerId,
+}: {
+  offerId: number
+}) {
   const { isLoggedIn } = useAuth()
   const { reportOffer } = useReports()
 
@@ -21,15 +25,24 @@ export default function ReportOffer({ offerId }: { offerId: number }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  if (!isLoggedIn) return null
+  if (!isLoggedIn) {
+    return null
+  }
 
   if (isSubmitted) {
-    return <p className="report-offer__confirmation">Signalement envoyé, merci.</p>
+    return (
+      <p className="report-offer__confirmation">
+        Signalement envoyé, merci.
+      </p>
+    )
   }
 
   if (!isOpen) {
     return (
-      <button className="report-offer__trigger" onClick={() => setIsOpen(true)}>
+      <button
+        className="report-offer__trigger"
+        onClick={() => setIsOpen(true)}
+      >
         Signaler cette offre
       </button>
     )
@@ -37,40 +50,85 @@ export default function ReportOffer({ offerId }: { offerId: number }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     setIsSubmitting(true)
-    setSubmitError(null) // clear any previous error before retrying
+    setSubmitError(null)
+
     try {
-      await reportOffer(offerId, reason, comment)
+      await reportOffer(
+        offerId,
+        reason,
+        comment
+      )
+
       setIsSubmitted(true)
     } catch {
-      setSubmitError('Impossible d\'envoyer le signalement pour le moment.')
+      setSubmitError(
+        "Impossible d'envoyer le signalement pour le moment."
+      )
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <form className="report-offer__form" onSubmit={handleSubmit}>
+    <form
+      className="report-offer__form"
+      onSubmit={handleSubmit}
+    >
       <label>
         Motif
-        <select value={reason} onChange={(e) => setReason(e.target.value)}>
+
+        <select
+          value={reason}
+          onChange={(e) =>
+            setReason(e.target.value)
+          }
+        >
           {REPORT_REASONS.map((r) => (
-            <option key={r} value={r}>{r}</option>
+            <option
+              key={r}
+              value={r}
+            >
+              {r}
+            </option>
           ))}
         </select>
       </label>
+
       <label>
         Précisions (facultatif)
-        <textarea value={comment} onChange={(e) => setComment(e.target.value)} />
+
+        <textarea
+          value={comment}
+          onChange={(e) =>
+            setComment(e.target.value)
+          }
+        />
       </label>
 
-      {submitError && <p className="report-offer__error">{submitError}</p>}
+      {submitError && (
+        <p className="report-offer__error">
+          {submitError}
+        </p>
+      )}
 
       <div className="report-offer__actions">
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Envoi...' : 'Envoyer le signalement'}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+        >
+          {isSubmitting
+            ? 'Envoi...'
+            : 'Envoyer le signalement'}
         </button>
-        <button type="button" onClick={() => setIsOpen(false)}>Annuler</button>
+
+        <button
+          type="button"
+          onClick={() => setIsOpen(false)}
+        >
+          Annuler
+        </button>
       </div>
     </form>
   )

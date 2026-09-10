@@ -6,6 +6,8 @@ export type ApplicationStatus = 'pending' | 'accepted' | 'rejected'
 export type Application = {
   id: number
   listingId: number
+  userId: number
+  userName: string
   userEmail: string
   status: ApplicationStatus
   createdAt: string
@@ -58,6 +60,8 @@ export function ApplicationsProvider({ children }: Readonly<{ children: ReactNod
     setApplications((previous) => [{
       id: createdApplication.id,
       listingId,
+      userId: createdApplication.candidate_id,
+      userName: createdApplication.candidate_name,
       userEmail: _userEmail,
       status: 'pending',
       createdAt: new Date().toISOString(),
