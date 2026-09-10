@@ -10,16 +10,17 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/lib/pq"
-    "github.com/golang-jwt/jwt/v5"
 )
 
 const (
-    host     = "localhost"
-    port     = 5432
-    user     = "postgres"
-    password = "motdepasse123"
-    dbname   = "mydb"
+	host     = "localhost"
+	port     = 5432
+	user     = "postgres"
+	password = "motdepasse123"
+	dbname   = "mydb"
 )
 
 const appVersion = "0.2"
@@ -27,9 +28,9 @@ const appVersion = "0.2"
 var db *sql.DB
 
 type User struct {
-    ID    int    `json:"id"`
-    Name  string `json:"name"`
-    Email string `json:"email"`
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type HealthResponse struct {
@@ -39,33 +40,34 @@ type HealthResponse struct {
 }
 
 func main() {
-    pgConnStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	pgConnStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 
-    conn, err := sql.Open("postgres", pgConnStr)
-    if err != nil {
-        log.Fatalf("Error opening database connection: %v", err)
-    }
-    db = conn
+	conn, err := sql.Open("postgres", pgConnStr)
+	if err != nil {
+		log.Fatalf("Error opening database connection: %v", err)
+	}
+	db = conn
 	handlers.DB = conn
-    defer db.Close()
+	defer db.Close()
 
-    err = db.Ping()
-    if err != nil {
-        log.Fatalf("Error connecting to the database: %v", err)
-    }
-    fmt.Println("Connected to the PostgreSQL database")
+	err = db.Ping()
+	if err != nil {
+		log.Fatalf("Error connecting to the database: %v", err)
+	}
+	fmt.Println("Connected to the PostgreSQL database")
 
-    http.HandleFunc("/users", getUsers)
-    http.HandleFunc("/users/add", addUser)
-    http.HandleFunc("/users/update", middleware.AuthCheck(updateUser))
-    http.HandleFunc("/users/delete", middleware.AuthCheck(deleteUser))
+	http.HandleFunc("/users", getUsers)
+	http.HandleFunc("/users/add", addUser)
+	http.HandleFunc("/users/update", middleware.AuthCheck(updateUser))
+	http.HandleFunc("/users/delete", middleware.AuthCheck(deleteUser))
 	http.HandleFunc("/offer/get", handlers.GetOffer)
-    http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
-    http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
+	http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
+	http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
+	http.HandleFunc("/offer/report/{id}", middleware.AuthCheck(handlers.ReportsOffer))
 	http.HandleFunc("/health", Health)
 
-    fmt.Println("Server is listening on port 8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+	fmt.Println("Server is listening on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func Health(w http.ResponseWriter, r *http.Request) {
@@ -74,65 +76,65 @@ func Health(w http.ResponseWriter, r *http.Request) {
 
 	dbStatus := "up"
 	err := db.PingContext(ctx)
-	if err != nil{
+	if err != nil {
 		dbStatus = "down"
 	}
 	overallStatus := "ok"
-	if dbStatus == "down"{
+	if dbStatus == "down" {
 		overallStatus = "degraded"
 	}
 	w.Header().Set("Content-Type", "application/json")
 
-	if overallStatus != "ok"{
+	if overallStatus != "ok" {
 		w.WriteHeader(http.StatusServiceUnavailable)
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}
 	json.NewEncoder(w).Encode(HealthResponse{
-		Status: overallStatus,
-		Version: appVersion,
+		Status:   overallStatus,
+		Version:  appVersion,
 		Database: dbStatus,
 	})
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
-    rows, err := db.Query("SELECT id, name, email FROM users")
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    defer rows.Close()
+	rows, err := db.Query("SELECT id, name, email FROM users")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
 
-    var users []User
-    for rows.Next() {
-        var user User
-        err := rows.Scan(&user.ID, &user.Name, &user.Email)
-        if err != nil {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-        }
-        users = append(users, user)
-    }
+	var users []User
+	for rows.Next() {
+		var user User
+		err := rows.Scan(&user.ID, &user.Name, &user.Email)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		users = append(users, user)
+	}
 
-    json.NewEncoder(w).Encode(users)
+	json.NewEncoder(w).Encode(users)
 }
 
 func addUser(w http.ResponseWriter, r *http.Request) {
-    var user User
-    err := json.NewDecoder(r.Body).Decode(&user)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
+	var user User
+	err := json.NewDecoder(r.Body).Decode(&user)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-    _, err = db.Exec("INSERT INTO users (name, email) VALUES ($1, $2)", user.Name, user.Email)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	_, err = db.Exec("INSERT INTO users (name, email) VALUES ($1, $2)", user.Name, user.Email)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    w.WriteHeader(http.StatusCreated)
-    fmt.Fprintf(w, "User added successfully")
+	w.WriteHeader(http.StatusCreated)
+	fmt.Fprintf(w, "User added successfully")
 }
 
 func updateUser(w http.ResponseWriter, r *http.Request) {
