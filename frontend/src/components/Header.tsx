@@ -1,18 +1,16 @@
 import { Link } from 'react-router-dom'
 import BrandBlock from './Brandblock'
 import { useAuth } from '../context/Authcontext'
-import type { Listing } from '../data/mockListings'
-import mockListings from '../data/mockListings'
-import { useState } from 'react'
+import { useListings } from '../context/Listingscontext'
 
 function Header() {
-  const { isLoggedIn } = useAuth()
-  const [listings] = useState<Listing[]>(mockListings)
+  const { isLoggedIn, accountType } = useAuth()
+  const { listings } = useListings()
 
   return (
     <header className="app-header">
       <Link to="/">
-          <BrandBlock />
+        <BrandBlock />
       </Link>
 
       <nav className="app-header__nav">
@@ -29,9 +27,9 @@ function Header() {
         {isLoggedIn ? (
           <Link
             className="btn btn--secondary-on-dark"
-            to="/profil"
+            to={accountType === 'admin' ? '/admin' : '/profil'}
           >
-            Profil
+            {accountType === 'admin' ? 'Administration' : 'Profil'}
           </Link>
         ) : (
           <Link

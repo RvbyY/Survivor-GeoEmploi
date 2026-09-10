@@ -2,10 +2,11 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/Authcontext'
 import { useListings } from '../context/Listingscontext'
 import { useApplications } from '../context/Applicationscontext'
+import ReportOffer from '../components/Reportoffer'
 
 function formatFullDate(iso: string): string {
   const date = new Date(iso)
-  if (isNaN(date.getTime())) return ''
+  if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
@@ -44,7 +45,7 @@ export default function OfferDetail() {
     )
   )
 
-  function handleApply() {
+  async function handleApply() {
     if (!isLoggedIn) {
       navigate('/login')
       return
@@ -63,7 +64,7 @@ export default function OfferDetail() {
       return
     }
 
-    const success = addApplication(listing.id, user.email)
+    const success = await addApplication(listing.id, user.email)
 
     if (!success) {
       alert('Vous avez déjà postulé à cette offre.')
@@ -95,13 +96,17 @@ export default function OfferDetail() {
           Publié le {formatFullDate(listing.date)}
         </p>
 
-        <button
-          className="btn btn--primary offer-detail__apply"
-          onClick={handleApply}
-          disabled={alreadyApplied}
-        >
-          {alreadyApplied ? 'Candidature envoyée' : 'Postuler'}
-        </button>
+        <div className="offer-detail__actions">
+          <button
+            className="btn btn--primary offer-detail__apply"
+            onClick={handleApply}
+            disabled={alreadyApplied}
+          >
+            {alreadyApplied ? 'Candidature envoyée' : 'Postuler'}
+          </button>
+
+          <ReportOffer offerId={listing.id} />
+        </div>
       </main>
     </div>
   )

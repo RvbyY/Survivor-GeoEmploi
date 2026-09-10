@@ -16,6 +16,7 @@ export default function Profil() {
   const [companyName, setCompanyName] = useState(
     user?.companyName ?? ''
   )
+  const [saveError, setSaveError] = useState('')
 
   if (!user || !accountType) {
     return (
@@ -65,17 +66,22 @@ export default function Profil() {
     setIsEditing(false)
   }
 
-  function handleSave() {
-    updateUser({
-      name: name.trim(),
-      email: email.trim(),
-      companyName:
-        accountType === 'employer'
-          ? companyName.trim()
-          : null,
-    })
+  async function handleSave() {
+    setSaveError('')
 
-    setIsEditing(false)
+    try {
+      await updateUser({
+        name: name.trim(),
+        email: email.trim(),
+        companyName:
+          accountType === 'employer'
+            ? companyName.trim()
+            : null,
+      })
+      setIsEditing(false)
+    } catch {
+      setSaveError('Impossible de sauvegarder les modifications.')
+    }
   }
 
   return (
@@ -97,7 +103,7 @@ export default function Profil() {
               <div className="profile-edit-form">
 
                 <label>
-                  Nom
+                  <span>Nom</span>
                   <input
                     type="text"
                     value={name}
@@ -108,7 +114,7 @@ export default function Profil() {
                 </label>
 
                 <label>
-                  Email
+                  <span>Email</span>
                   <input
                     type="email"
                     value={email}
@@ -120,7 +126,7 @@ export default function Profil() {
 
                 {accountType === 'employer' && (
                   <label>
-                    Entreprise
+                    <span>Entreprise</span>
                     <input
                       type="text"
                       value={companyName}
@@ -169,6 +175,7 @@ export default function Profil() {
                 >
                   Enregistrer
                 </button>
+                {saveError && <p role="alert">{saveError}</p>}
               </>
             ) : (
               <button

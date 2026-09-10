@@ -3,6 +3,7 @@ package handlers
 import (
 	"backend/middleware"
 	"backend/models"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -27,6 +28,11 @@ type ReportOfferRequest struct {
 	ReportMessage string `json:"report_message"`
 }
 
+const (
+	invalidTokenMessage = "Invalid token"
+	serverErrorMessage  = "Server error"
+)
+
 func GetOffer(w http.ResponseWriter, r *http.Request) {
 	rows, err := DB.Query("SELECT id, offer_name, description, address, company_name, company_id, salary, latitude, longitude, date, max_distance FROM offers")
 	if err != nil {
@@ -38,12 +44,20 @@ func GetOffer(w http.ResponseWriter, r *http.Request) {
 	var offers []models.Offer
 	for rows.Next() {
 		var o models.Offer
-		err := rows.Scan(&o.ID, &o.OfferName, &o.Description, &o.Address, &o.CompanyName, &o.CompanyId, &o.Salary, &o.Latitude, &o.Longitude, &o.Date, &o.MaxDistance)
+		var maxDistance sql.NullFloat64
+		err := rows.Scan(&o.ID, &o.OfferName, &o.Description, &o.Address, &o.CompanyName, &o.CompanyId, &o.Salary, &o.Latitude, &o.Longitude, &o.Date, &maxDistance)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		if maxDistance.Valid {
+			o.MaxDistance = maxDistance.Float64
+		}
 		offers = append(offers, o)
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	json.NewEncoder(w).Encode(offers)
 }
@@ -57,7 +71,7 @@ func AddOffer(w http.ResponseWriter, r *http.Request) {
 
 	userIDFloat, ok := claims["user_id"].(float64)
 	if !ok {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		http.Error(w, invalidTokenMessage, http.StatusUnauthorized)
 		return
 	}
 
@@ -65,7 +79,7 @@ func AddOffer(w http.ResponseWriter, r *http.Request) {
 	var exists bool
 	err := DB.QueryRow(`SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)`, userID).Scan(&exists)
 	if err != nil {
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		http.Error(w, serverErrorMessage, http.StatusInternalServerError)
 		return
 	}
 	if !exists {
@@ -107,7 +121,7 @@ func DeleteOffer(w http.ResponseWriter, r *http.Request) {
 	}
 	userIDFloat, ok := claims["user_id"].(float64)
 	if !ok {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		http.Error(w, invalidTokenMessage, http.StatusUnauthorized)
 		return
 	}
 	userID := int(userIDFloat)
@@ -143,7 +157,7 @@ func ReportsOffer(w http.ResponseWriter, r *http.Request) {
 
 	userIDFloat, ok := claims["user_id"].(float64)
 	if !ok {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		http.Error(w, invalidTokenMessage, http.StatusUnauthorized)
 		return
 	}
 	userID := int(userIDFloat)
@@ -151,7 +165,7 @@ func ReportsOffer(w http.ResponseWriter, r *http.Request) {
 	var exists bool
 	err := DB.QueryRow(`SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)`, userID).Scan(&exists)
 	if err != nil {
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		http.Error(w, serverErrorMessage, http.StatusInternalServerError)
 		return
 	}
 	if !exists {
@@ -169,7 +183,7 @@ func ReportsOffer(w http.ResponseWriter, r *http.Request) {
 	var offerExists bool
 	err = DB.QueryRow(`SELECT EXISTS(SELECT 1 FROM offers WHERE id = $1)`, offerID).Scan(&offerExists)
 	if err != nil {
-		http.Error(w, "Server error", http.StatusInternalServerError)
+		http.Error(w, serverErrorMessage, http.StatusInternalServerError)
 		return
 	}
 	if !offerExists {
@@ -178,7 +192,7 @@ func ReportsOffer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req ReportOfferRequest
-	err = json.NewDecoder(r.Body).Decode(&req);
+	err = json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "invalid body", http.StatusBadRequest)
 		return
