@@ -10,10 +10,9 @@ import (
 	"os"
 	"strconv"
 	"time"
-
+    "github.com/golang-jwt/jwt/v5"
 	"backend/handlers"
 	"backend/middleware"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
