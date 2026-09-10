@@ -403,7 +403,7 @@ export default function Profil() {
                         </span>
 
                         <Link
-                          to={`/offer/${currentListing.id}`}
+                          to={`/offre/${currentListing.id}`}
                           className="btn btn--secondary"
                         >
                           Voir l'offre
