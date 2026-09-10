@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
+	_ "github.com/lib/pq"
 	"backend/handlers"
 	"backend/middleware"
 
@@ -33,6 +35,7 @@ type User struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
 	Email       string  `json:"email"`
+	Password 	string	`json:"password"`
 	AccountType string  `json:"accountType"`
 	CompanyName *string `json:"companyName"`
 }
@@ -67,6 +70,7 @@ func main() {
 	http.HandleFunc("/offer/get", handlers.GetOffer)
 	http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
 	http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
+	http.HandleFunc("/offer/report/{id}", middleware.AuthCheck(handlers.ReportsOffer))
 	http.HandleFunc("/health", Health)
 	http.HandleFunc("/auth/login", loginHandler)
 	http.HandleFunc("/auth/register", registerHandler)
@@ -74,6 +78,8 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", withCORS(http.DefaultServeMux)))
 }
 
+	fmt.Println("Server is listening on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
@@ -125,7 +131,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var user User
-		err := rows.Scan(&user.ID, &user.Name, &user.Email)
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.AccountType, &user.CompanyName)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -150,7 +156,7 @@ func addUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO users (name, email) VALUES ($1, $2)", user.Name, user.Email)
+	_, err = db.Exec("INSERT INTO users (name, email, password, accountType, companyName) VALUES ($1, $2, $3, $4, $5)", user.Name, user.Email, user.Password, user.AccountType, user.CompanyName)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -181,7 +187,7 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Exec("UPDATE users SET name=$1, email=$2 WHERE id=$3", user.Name, user.Email, userID)
+	result, err := db.Exec("UPDATE users SET name=$1, email=$2, accountType=$4, companyName=$5 WHERE password=$3, id=$6", user.Name, user.Email, user.Password, user.AccountType, user.CompanyName, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
