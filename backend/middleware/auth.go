@@ -1,11 +1,13 @@
 package middleware
 
 import (
-	"net/http"
-	"github.com/golang-jwt/jwt/v5"
 	"context"
-	"strings"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 var secretKey = []byte("321654987")
@@ -13,6 +15,17 @@ var secretKey = []byte("321654987")
 type contextKey string
 
 const ClaimsKey contextKey = "claims"
+
+func CreateToken(userID int, accountType string) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id":      userID,
+		"account_type": accountType,
+		"exp":          time.Now().Add(24 * time.Hour).Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(secretKey)
+}
 
 func AuthCheck(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -26,6 +39,9 @@ func AuthCheck(next http.HandlerFunc) http.HandlerFunc {
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
 		token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method")
+			}
 			return secretKey, nil
 		})
 		if err != nil || !token.Valid {
