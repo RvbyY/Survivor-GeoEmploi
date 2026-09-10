@@ -2,12 +2,20 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/Authcontext'
 import { useListings } from '../context/Listingscontext'
-import { useApplications } from '../context/Applicationscontext'
+import {
+  useApplications,
+  type ApplicationStatus,
+} from '../context/Applicationscontext'
 
 export default function Profil() {
   const { user, accountType, logout, updateUser } = useAuth()
   const { listings, removeListing } = useListings()
-  const { applications } = useApplications()
+  const {
+    applications,
+    updateApplicationStatus,
+  } = useApplications()
+
+  const [expandedListingId, setExpandedListingId] = useState<number | null>(null)
 
   const [isEditing, setIsEditing] = useState(false)
 
@@ -262,30 +270,30 @@ export default function Profil() {
 
                       </div>
 
-                     <div className="profile-list__actions">
+                      <div className="profile-list__actions">
 
-                        <div className="profile-applications">
-                          {listingApplications.length === 0 ? (
-                            <span className="profile-badge">
-                              Aucune candidature
-                            </span>
-                          ) : (
-                            listingApplications.map((application) => (
-                              <div key={application.id} className="profile-application">
-                                <strong>{application.userName}</strong>
-                                <span>{application.userEmail}</span>
+                        <span className="profile-badge">
+                          {listingApplications.length}{' '}
+                          candidature
+                          {listingApplications.length > 1
+                            ? 's'
+                            : ''}
+                        </span>
 
-                                <span
-                                  className={`profile-status profile-status--${application.status}`}
-                                >
-                                  {application.status === 'pending' && 'En attente'}
-                                  {application.status === 'accepted' && 'Acceptée'}
-                                  {application.status === 'rejected' && 'Refusée'}
-                                </span>
-                              </div>
-                            ))
-                          )}
-                        </div>
+                        <button
+                          className="btn btn--secondary"
+                          onClick={() =>
+                            setExpandedListingId(
+                              expandedListingId === listing.id
+                                ? null
+                                : listing.id
+                            )
+                          }
+                        >
+                          {expandedListingId === listing.id
+                            ? 'Masquer les candidatures'
+                            : 'Voir les candidatures'}
+                        </button>
 
                         <Link
                           to={`/offres/${listing.id}`}
@@ -302,6 +310,47 @@ export default function Profil() {
                         </button>
 
                       </div>
+                      {expandedListingId === listing.id && (
+                        <div className="profile-applications">
+                          <h4>Candidatures</h4>
+
+                          {listingApplications.length === 0 ? (
+                            <p>Aucune candidature pour cette offre.</p>
+                          ) : (
+                            listingApplications.map((application) => (
+                              <div
+                                key={application.id}
+                                className="profile-application"
+                              >
+                                <div className="profile-application__info">
+                                  <strong>{application.userName}</strong>
+                                  <span>{application.userEmail}</span>
+                                </div>
+
+                                <select
+                                  value={application.status}
+                                  onChange={(event) =>
+                                    updateApplicationStatus(
+                                      application.id,
+                                      event.target.value as ApplicationStatus
+                                    )
+                                  }
+                                >
+                                  <option value="pending">
+                                    En attente
+                                  </option>
+                                  <option value="accepted">
+                                    Acceptée
+                                  </option>
+                                  <option value="rejected">
+                                    Refusée
+                                  </option>
+                                </select>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </article>
                   )
                 })}
