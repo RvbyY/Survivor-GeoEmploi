@@ -1,4 +1,3 @@
-// context/Reportscontext.tsx
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { useAuth } from './Authcontext'
 
@@ -28,6 +27,7 @@ const API_URL = 'http://localhost:8080'
 
 export function ReportsProvider({ children }: { children: ReactNode }) {
   const { token } = useAuth()
+
   const [reports, setReports] = useState<Report[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -35,89 +35,147 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
   const refresh = async () => {
     setIsLoading(true)
     setError(null)
+
     try {
       const response = await fetch(`${API_URL}/reports`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers: token
+          ? { Authorization: `Bearer ${token}` }
+          : {},
       })
-      if (!response.ok) throw new Error('Failed to load reports')
+
+      if (!response.ok) {
+        throw new Error('Failed to load reports')
+      }
+
       const data = await response.json()
+
       setReports(
         data.map((r: any) => ({
           id: r.id,
           offerId: r.offer_id ?? r.offerId,
           reason: r.reason,
-          comment: r.comment,
-          status: r.status,
+          comment: r.comment ?? '',
+          status: r.status ?? 'pending',
         }))
       )
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unknown error'
+      )
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    refresh()
-  }, [])
+    if (token) {
+      refresh()
+    } else {
+      setReports([])
+    }
+  }, [token])
 
-  const reportOffer = async (offerId: number, reason: string, comment: string) => {
-    if (!token) throw new Error('Not authenticated')
+ const reportOffer = async (
+    offerId: number,
+    reason: string,
+    comment: string
+  ) => {
+    if (!token) {
+      throw new Error('Not authenticated')
+    }
 
-    const response = await fetch(`${API_URL}/reports`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ offer_id: offerId, reason, comment }),
-    })
-    if (!response.ok) throw new Error('Failed to submit report')
-
-    const created = await response.json()
-    setReports((prev) => [
-      ...prev,
+    const response = await fetch(
+      `${API_URL}/offer/report/${offerId}`,
       {
-        id: created.id,
-        offerId: created.offer_id ?? created.offerId ?? offerId,
-        reason: created.reason ?? reason,
-        comment: created.comment ?? comment,
-        status: created.status ?? 'pending',
-      },
-    ])
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          report_reason: reason,
+          report_message: comment,
+        }),
+      }
+    )
+
+    if (!response.ok) {
+      throw new Error('Failed to submit report')
+    }
+
+    await refresh()
   }
 
-  const updateReportStatus = async (id: number, status: ReportStatus) => {
-    if (!token) throw new Error('Not authenticated')
+  const updateReportStatus = async (
+    id: number,
+    status: ReportStatus
+  ) => {
+    if (!token) {
+      throw new Error('Not authenticated')
+    }
 
-    const response = await fetch(`${API_URL}/reports/${id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status }),
-    })
-    if (!response.ok) throw new Error('Failed to update report')
+    const response = await fetch(
+      `${API_URL}/reports/${id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status }),
+      }
+    )
 
-    setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status } : r)))
+    if (!response.ok) {
+      throw new Error('Failed to update report')
+    }
+
+    setReports((prev) =>
+      prev.map((report) =>
+        report.id === id
+          ? { ...report, status }
+          : report
+      )
+    )
   }
 
   const removeReport = async (id: number) => {
-    if (!token) throw new Error('Not authenticated')
+    if (!token) {
+      throw new Error('Not authenticated')
+    }
 
-    const response = await fetch(`${API_URL}/reports/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    if (!response.ok) throw new Error('Failed to delete report')
+    const response = await fetch(
+      `${API_URL}/reports/${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
 
-    setReports((prev) => prev.filter((r) => r.id !== id))
+    if (!response.ok) {
+      throw new Error('Failed to delete report')
+    }
+
+    setReports((prev) =>
+      prev.filter((report) => report.id !== id)
+    )
   }
 
   return (
     <ReportsContext.Provider
-      value={{ reports, isLoading, error, refresh, reportOffer, updateReportStatus, removeReport }}
+      value={{
+        reports,
+        isLoading,
+        error,
+        refresh,
+        reportOffer,
+        updateReportStatus,
+        removeReport,
+      }}
     >
       {children}
     </ReportsContext.Provider>
@@ -126,6 +184,12 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
 
 export function useReports() {
   const ctx = useContext(ReportsContext)
-  if (!ctx) throw new Error('useReports must be used within ReportsProvider')
+
+  if (!ctx) {
+    throw new Error(
+      'useReports must be used within ReportsProvider'
+    )
+  }
+
   return ctx
 }
