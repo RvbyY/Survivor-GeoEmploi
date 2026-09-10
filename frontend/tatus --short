@@ -1,0 +1,6 @@
+          email           | count |                                          rows                                           
+--------------------------+-------+-----------------------------------------------------------------------------------------
+ bassirou@grand.fr        |     3 | 6:Bassirou Grand, 7:Bassirou Grand, 8:Bassirou Grand
+ bassirou.tall@epitech.eu |     5 | 1:Bassirou GRAND, 3:Bassirou GRAND, 4:Bassirou GRAND, 5:Bassirou GRAND, 9:Bassirou Tall
+(2 rows)
+

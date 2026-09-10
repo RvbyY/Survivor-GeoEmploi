@@ -28,7 +28,10 @@ CREATE TABLE offers (
 CREATE TABLE candidacy (
     id SERIAL PRIMARY KEY,
     offer_id INTEGER REFERENCES offers(id),
-    candidate_id INTEGER REFERENCES users(id)
+    candidate_id INTEGER REFERENCES users(id),
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    UNIQUE (offer_id, candidate_id)
 );
 
 CREATE TABLE reports (

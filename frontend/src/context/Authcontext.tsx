@@ -15,7 +15,7 @@ interface AuthContextType {
   token: string | null
   login: (accountType: AccountType, user: AuthUser, token: string) => void
   logout: () => void
-  updateUser: (userData: AuthUser) => void
+  updateUser: (userData: AuthUser) => Promise<void>
 }
 
 type StoredSession = {
@@ -51,10 +51,26 @@ export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
     setSession(nextSession)
   }
 
-  const updateUser = (userData: AuthUser) => {
+  const updateUser = async (userData: AuthUser) => {
+    if (!session) throw new Error('Utilisateur non connecté')
+
+    const response = await fetch('http://localhost:8080/users/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.token}`,
+      },
+      body: JSON.stringify(userData),
+    })
+
+    if (!response.ok) {
+      throw new Error('Impossible de sauvegarder le profil')
+    }
+
+    const updatedUser = (await response.json()) as AuthUser
     setSession((currentSession) => {
       if (!currentSession) return null
-      const nextSession = { ...currentSession, user: userData }
+      const nextSession = { ...currentSession, user: updatedUser }
       localStorage.setItem(sessionStorageKey, JSON.stringify(nextSession))
       return nextSession
     })

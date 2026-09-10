@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	_ "github.com/lib/pq"
 	"backend/handlers"
 	"backend/middleware"
 
@@ -29,13 +27,17 @@ const (
 
 const appVersion = "0.2"
 
+const (
+	contentTypeHeader = "Content-Type"
+	jsonContentType   = "application/json"
+)
+
 var db *sql.DB
 
 type User struct {
 	ID          int     `json:"id"`
 	Name        string  `json:"name"`
 	Email       string  `json:"email"`
-	Password 	string	`json:"password"`
 	AccountType string  `json:"accountType"`
 	CompanyName *string `json:"companyName"`
 }
@@ -71,6 +73,10 @@ func main() {
 	http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
 	http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
 	http.HandleFunc("/offer/report/{id}", middleware.AuthCheck(handlers.ReportsOffer))
+	http.HandleFunc("/candidacy", middleware.AuthCheck(handlers.GetCandidacies))
+	http.HandleFunc("/candidacy/add", middleware.AuthCheck(handlers.AddCandidacy))
+	http.HandleFunc("/candidacy/update", middleware.AuthCheck(handlers.UpdateCandidacy))
+	http.HandleFunc("/candidacy/delete", middleware.AuthCheck(handlers.DeleteCandidacy))
 	http.HandleFunc("/health", Health)
 	http.HandleFunc("/auth/login", loginHandler)
 	http.HandleFunc("/auth/register", registerHandler)
@@ -78,8 +84,6 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", withCORS(http.DefaultServeMux)))
 }
 
-	fmt.Println("Server is listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
@@ -106,7 +110,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 	if dbStatus == "down" {
 		overallStatus = "degraded"
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentTypeHeader, jsonContentType)
 
 	if overallStatus != "ok" {
 		w.WriteHeader(http.StatusServiceUnavailable)
@@ -121,7 +125,7 @@ func Health(w http.ResponseWriter, r *http.Request) {
 }
 
 func getUsers(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, name, email FROM users")
+	rows, err := db.Query("SELECT id, name, email, account_type, company_name FROM users")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -131,7 +135,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var user User
-		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.AccountType, &user.CompanyName)
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.AccountType, &user.CompanyName)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -144,19 +148,38 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentTypeHeader, jsonContentType)
 	json.NewEncoder(w).Encode(users)
 }
 
 func addUser(w http.ResponseWriter, r *http.Request) {
-	var user User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	var registration struct {
+		Name        string  `json:"name"`
+		Email       string  `json:"email"`
+		Password    string  `json:"password"`
+		AccountType string  `json:"accountType"`
+		CompanyName *string `json:"companyName"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&registration)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO users (name, email, password, accountType, companyName) VALUES ($1, $2, $3, $4, $5)", user.Name, user.Email, user.Password, user.AccountType, user.CompanyName)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(registration.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "could not secure password", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = db.Exec(
+		"INSERT INTO users (name, email, password_hash, account_type, company_name) VALUES ($1, $2, $3, $4, $5)",
+		registration.Name,
+		registration.Email,
+		string(passwordHash),
+		registration.AccountType,
+		registration.CompanyName,
+	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -187,19 +210,25 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := db.Exec("UPDATE users SET name=$1, email=$2, accountType=$4, companyName=$5 WHERE password=$3, id=$6", user.Name, user.Email, user.Password, user.AccountType, user.CompanyName, userID)
+	var updatedUser User
+	err = db.QueryRow(
+		"UPDATE users SET name=$1, email=$2, company_name=$3 WHERE id=$4 RETURNING id, name, email, account_type, company_name",
+		user.Name,
+		user.Email,
+		user.CompanyName,
+		userID,
+	).Scan(&updatedUser.ID, &updatedUser.Name, &updatedUser.Email, &updatedUser.AccountType, &updatedUser.CompanyName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "user not found", http.StatusNotFound)
+			return
+		}
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	rowsAffected, _ := result.RowsAffected()
-	if rowsAffected == 0 {
-		http.Error(w, "user not found", http.StatusNotFound)
-		return
-	}
-
-	fmt.Fprint(w, "User updated successfully")
+	w.Header().Set(contentTypeHeader, jsonContentType)
+	json.NewEncoder(w).Encode(updatedUser)
 }
 
 func deleteUser(w http.ResponseWriter, r *http.Request) {
@@ -242,19 +271,38 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var passwordHash string
 	var user User
 
-	err := db.QueryRow(
+	rows, err := db.Query(
 		"SELECT id, name, email, account_type, company_name, password_hash FROM users WHERE email = $1",
 		credentials.Email,
-	).Scan(&user.ID, &user.Name, &user.Email,
-		&user.AccountType, &user.CompanyName, &passwordHash)
+	)
+	if err != nil {
+		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		return
+	}
+	defer rows.Close()
 
-	if err != nil || bcrypt.CompareHashAndPassword(
-		[]byte(passwordHash),
-		[]byte(credentials.Password),
-	) != nil {
+	matched := false
+	for rows.Next() {
+		var passwordHash string
+		var candidate User
+		if err := rows.Scan(&candidate.ID, &candidate.Name, &candidate.Email,
+			&candidate.AccountType, &candidate.CompanyName, &passwordHash); err != nil {
+			http.Error(w, "could not read account", http.StatusInternalServerError)
+			return
+		}
+		if bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(credentials.Password)) == nil {
+			user = candidate
+			matched = true
+			break
+		}
+	}
+	if err := rows.Err(); err != nil {
+		http.Error(w, "could not read account", http.StatusInternalServerError)
+		return
+	}
+	if !matched {
 		http.Error(w, "invalid credentials", http.StatusUnauthorized)
 		return
 	}
@@ -264,7 +312,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentTypeHeader, jsonContentType)
 	json.NewEncoder(w).Encode(map[string]any{
 		"user":  user,
 		"token": token,
@@ -284,6 +332,17 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid request", http.StatusBadRequest)
 		return
 	}
+
+	var emailExists bool
+	if err := db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)", registration.Email).Scan(&emailExists); err != nil {
+		http.Error(w, "could not check account", http.StatusInternalServerError)
+		return
+	}
+	if emailExists {
+		http.Error(w, "email already registered", http.StatusConflict)
+		return
+	}
+
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(registration.Password), bcrypt.DefaultCost)
 	if err != nil {
 		http.Error(w, "could not secure password", http.StatusInternalServerError)
@@ -312,7 +371,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentTypeHeader, jsonContentType)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]any{"user": user, "token": token})
 }
