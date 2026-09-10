@@ -95,8 +95,9 @@ export function ReportsProvider({ children }: { children: ReactNode }) {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          report_reason: reason,
-          report_message: comment,
+          reason: reason,
+          message: comment,
+          status: 'pending',
         }),
       }
     )
