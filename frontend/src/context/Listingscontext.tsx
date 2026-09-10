@@ -3,8 +3,9 @@ import initialListings from '../data/mockListings'
 import type { Listing } from '../data/mockListings'
 
 interface ListingsContextType {
-  listings: Listing[];
-  addListing: (listing: Omit<Listing, 'id'>) => void;
+  listings: Listing[]
+  addListing: (listing: Omit<Listing, 'id'>) => void
+  removeListing: (id: number) => void
 }
 
 const ListingsContext = createContext<ListingsContextType | undefined>(undefined);
@@ -22,8 +23,12 @@ export function ListingsProvider({ children }: { children: ReactNode }) {
     setListings((prev) => [newListing, ...prev])
   }
 
+  const removeListing = (id: number) => {
+    setListings((prev) => prev.filter((l) => l.id !== id))
+  }
+
   return (
-    <ListingsContext.Provider value={{ listings, addListing }}>
+    <ListingsContext.Provider value={{ listings, addListing, removeListing }}>
       {children}
     </ListingsContext.Provider>
   );

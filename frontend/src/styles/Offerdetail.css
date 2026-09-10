@@ -76,9 +76,15 @@
 /* ---- Apply button ---- */
 
 .offer-detail__apply {
-  margin-top: 32px;
+  height: 44px;
+  padding: 0 20px;
+  box-sizing: border-box;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   min-width: 140px;
-  padding: 10px 20px;
   font-size: 13px;
 }
 
@@ -88,4 +94,11 @@
   font-family: var(--sans);
   font-size: 13px;
   color: #8993a5;
+}
+
+.offer-detail__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 32px;
 }

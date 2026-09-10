@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/Authcontext'
 import { useListings } from '../context/Listingscontext'
 import { useApplications } from '../context/Applicationscontext'
+import ReportOffer from '../components/Reportoffer'
 
 function formatFullDate(iso: string): string {
   const date = new Date(iso)
@@ -95,13 +96,17 @@ export default function OfferDetail() {
           Publié le {formatFullDate(listing.date)}
         </p>
 
-        <button
-          className="btn btn--primary offer-detail__apply"
-          onClick={handleApply}
-          disabled={alreadyApplied}
-        >
-          {alreadyApplied ? 'Candidature envoyée' : 'Postuler'}
-        </button>
+        <div className="offer-detail__actions">
+          <button
+            className="btn btn--primary offer-detail__apply"
+            onClick={handleApply}
+            disabled={alreadyApplied}
+          >
+            {alreadyApplied ? 'Candidature envoyée' : 'Postuler'}
+          </button>
+
+          <ReportOffer offerId={listing.id} />
+        </div>
       </main>
     </div>
   )

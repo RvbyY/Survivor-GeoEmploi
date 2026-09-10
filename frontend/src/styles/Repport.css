@@ -1,0 +1,149 @@
+.report-offer__trigger {
+  height: 44px;
+  padding: 0 20px;
+  box-sizing: border-box;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 13px;
+
+  background: #fff;
+  border: 2px solid var(--bg);
+  color: var(--bg);
+  border-radius: 6px;
+  cursor: pointer;
+
+  transition: background-color 0.15s ease;
+}
+
+.report-offer__trigger:hover {
+  background: #eef1f7;
+}
+
+.report-offer__confirmation {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: #2f7d4f;
+  background: #eaf6ee;
+  border: 1px solid #bfe3cb;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.report-offer__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  max-width: 420px;
+  margin-top: 12px;
+  padding: 20px;
+
+  background: #ffffff;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(15, 30, 56, 0.06);
+}
+
+.report-offer__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  font-family: var(--heading);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: #5a6785;
+}
+
+.report-offer__form select,
+.report-offer__form textarea {
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 9px 11px;
+
+  border: 1px solid #d7dbe4;
+  border-radius: 6px;
+  background: #fff;
+  color: #0f1e38;
+
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.report-offer__form select:focus-visible,
+.report-offer__form textarea:focus-visible {
+  outline: none;
+  border-color: var(--bg);
+  box-shadow: 0 0 0 3px rgba(88, 38, 142, 0.12);
+}
+
+.report-offer__form textarea {
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.report-offer__error {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: #b3261e;
+  background: #fdecea;
+  border: 1px solid #f4c7c3;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0;
+}
+
+.report-offer__actions {
+  display: flex;
+  gap: 10px;
+}
+
+.report-offer__actions button[type='submit'] {
+  font-family: var(--heading);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 16px;
+
+  background: #fff;
+  border: 2px solid var(--bg);
+  color: var(--bg);
+  border-radius: 6px;
+  cursor: pointer;
+
+  transition: background-color 0.15s ease;
+}
+
+.report-offer__actions button[type='submit']:hover:not(:disabled) {
+  background: #eef1f7;
+}
+
+.report-offer__actions button[type='submit']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.report-offer__actions button[type='button'] {
+  font-family: var(--heading);
+  font-weight: 600;
+  font-size: 12px;
+  padding: 8px 16px;
+
+  background: transparent;
+  border: 2px solid transparent;
+  color: #5a6785;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.report-offer__actions button[type='button']:hover {
+  color: var(--bg);
+}
