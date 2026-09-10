@@ -88,7 +88,12 @@ export default function Login() {
       }
 
       const data = await response.json()
-      login(data.user.accountType, data.user)
+      if (typeof data.token !== 'string' || !data.user) {
+        setErrors(['Réponse de connexion invalide.'])
+        return
+      }
+
+      login(data.user.accountType, data.user, data.token)
       navigate('/')
     } catch {
       setErrors(['Le serveur est inaccessible. Vérifiez que le backend est démarré.'])
