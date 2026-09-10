@@ -6,7 +6,7 @@ import { useApplications } from '../context/Applicationscontext'
 
 export default function Profil() {
   const { user, accountType, logout, updateUser } = useAuth()
-  const { listings } = useListings()
+  const { listings, removeListing } = useListings()
   const { applications } = useApplications()
 
   const [isEditing, setIsEditing] = useState(false)
@@ -226,7 +226,7 @@ export default function Profil() {
                 </p>
 
                 <Link
-                  to="/publish"
+                  to="/publier"
                   className="btn btn--primary"
                 >
                   Publier une offre
@@ -262,7 +262,7 @@ export default function Profil() {
 
                       </div>
 
-                      <div className="profile-list__actions">
+                     <div className="profile-list__actions">
 
                         <span className="profile-badge">
                           {listingApplications.length}{' '}
@@ -273,11 +273,18 @@ export default function Profil() {
                         </span>
 
                         <Link
-                          to={`/offer/${listing.id}`}
+                          to={`/offres/${listing.id}`}
                           className="btn btn--secondary"
                         >
                           Voir l'offre
                         </Link>
+
+                        <button
+                          className="btn btn--secondary"
+                          onClick={() => removeListing(listing.id)}
+                        >
+                          Supprimer
+                        </button>
 
                       </div>
                     </article>
