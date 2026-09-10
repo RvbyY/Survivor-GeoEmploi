@@ -1,266 +1,176 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "GéoEmploi Web App API",
-    "description": "API de gestion des utilisateurs pour l'application GéoEmploi. Cette spécification décrit les endpoints actuellement exposés par le backend Go et leur schéma de données.",
-    "version": "0.0.1",
-    "termsOfService": "https://example.com/terms/",
-    "contact": {
-      "name": "API Support",
-      "url": "https://www.example.com/support",
-      "email": "support@example.com"
-    },
-    "license": {
-      "name": "MIT license",
-      "url": "https://tlo.mit.edu/understand-ip/exploring-mit-open-source-license-comprehensive-guide"
-    }
+    "title": "GéoEmploi API",
+    "description": "API backend de GéoEmploi pour l'authentification, les utilisateurs, les offres, les signalements et les candidatures.",
+    "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:8080",
-      "description": "Serveur de développement local"
-    }
-  ],
+  "servers": [{"url": "http://localhost:8080", "description": "Serveur local"}],
   "tags": [
-    {
-      "name": "Users",
-      "description": "Gestion des utilisateurs"
-    }
+    {"name": "Health"},
+    {"name": "Authentication"},
+    {"name": "Users"},
+    {"name": "Offers"},
+    {"name": "Reports"},
+    {"name": "Candidacies"}
   ],
   "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Vérifier l'état de l'API et de la base de données",
+        "responses": {"200": {"description": "Service disponible", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/HealthResponse"}}}}, "503": {"description": "Base de données indisponible", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/HealthResponse"}}}}}
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Créer un compte",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RegisterRequest"}}}},
+        "responses": {"201": {"description": "Compte créé", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AuthResponse"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "409": {"$ref": "#/components/responses/Conflict"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Se connecter",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/LoginRequest"}}}},
+        "responses": {"200": {"description": "Connexion réussie", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/AuthResponse"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
     "/users": {
       "get": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Récupérer la liste des utilisateurs",
-        "operationId": "getUsers",
-        "responses": {
-          "200": {
-            "description": "Liste des utilisateurs retournée avec succès",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
-        }
+        "tags": ["Users"],
+        "summary": "Lister les utilisateurs",
+        "responses": {"200": {"description": "Liste des utilisateurs", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/User"}}}}}, "500": {"$ref": "#/components/responses/ServerError"}}
       }
     },
     "/users/add": {
       "post": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Ajouter un utilisateur",
-        "operationId": "addUser",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserCreate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Utilisateur ajouté avec succès",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string",
-                  "example": "User added successfully"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
-        }
+        "tags": ["Users"],
+        "summary": "Créer un utilisateur",
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/RegisterRequest"}}}},
+        "responses": {"201": {"description": "Utilisateur créé", "content": {"text/plain": {"schema": {"type": "string"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "500": {"$ref": "#/components/responses/ServerError"}}
       }
     },
     "/users/update": {
       "put": {
-        "tags": [
-          "Users"
-        ],
-        "summary": "Mettre à jour un utilisateur",
-        "operationId": "updateUser",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/User"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Utilisateur mis à jour avec succès",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string",
-                  "example": "User updated successfully"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
-        }
+        "tags": ["Users"],
+        "summary": "Mettre à jour son profil",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/UserUpdateRequest"}}}},
+        "responses": {"200": {"description": "Profil mis à jour", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/User"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "404": {"$ref": "#/components/responses/NotFound"}, "500": {"$ref": "#/components/responses/ServerError"}}
       }
     },
     "/users/delete": {
       "delete": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "summary": "Supprimer un utilisateur",
-        "operationId": "deleteUser",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "description": "Identifiant de l'utilisateur à supprimer",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int64",
-              "example": 1
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Utilisateur supprimé avec succès",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "string",
-                  "example": "User deleted successfully"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "500": {
-            "$ref": "#/components/responses/ServerError"
-          }
-        }
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/UserId"}],
+        "responses": {"200": {"description": "Utilisateur supprimé", "content": {"text/plain": {"schema": {"type": "string"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/offer/get": {
+      "get": {
+        "tags": ["Offers"],
+        "summary": "Lister les offres",
+        "responses": {"200": {"description": "Liste des offres", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/Offer"}}}}}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/offer/add": {
+      "post": {
+        "tags": ["Offers"],
+        "summary": "Publier une offre",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/OfferCreateRequest"}}}},
+        "responses": {"201": {"description": "Offre créée", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreatedIdResponse"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/offer/delete/{id}": {
+      "delete": {
+        "tags": ["Offers"],
+        "summary": "Supprimer une offre",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/OfferId"}],
+        "responses": {"204": {"description": "Offre supprimée"}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/offer/report/{id}": {
+      "post": {
+        "tags": ["Reports"],
+        "summary": "Signaler une offre",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/OfferId"}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/ReportRequest"}}}},
+        "responses": {"201": {"description": "Signalement créé", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreatedIdResponse"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "404": {"$ref": "#/components/responses/NotFound"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/candidacy": {
+      "get": {
+        "tags": ["Candidacies"],
+        "summary": "Lister les candidatures accessibles",
+        "security": [{"bearerAuth": []}],
+        "responses": {"200": {"description": "Liste des candidatures", "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/Candidacy"}}}}}, "401": {"$ref": "#/components/responses/Unauthorized"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/candidacy/add": {
+      "post": {
+        "tags": ["Candidacies"],
+        "summary": "Postuler à une offre",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CandidacyCreateRequest"}}}},
+        "responses": {"201": {"description": "Candidature créée", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CreatedIdResponse"}}}}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "404": {"$ref": "#/components/responses/NotFound"}, "409": {"$ref": "#/components/responses/Conflict"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/candidacy/update": {
+      "patch": {
+        "tags": ["Candidacies"],
+        "summary": "Modifier le statut d'une candidature",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {"required": true, "content": {"application/json": {"schema": {"$ref": "#/components/schemas/CandidacyUpdateRequest"}}}},
+        "responses": {"204": {"description": "Statut mis à jour"}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "403": {"$ref": "#/components/responses/Forbidden"}, "404": {"$ref": "#/components/responses/NotFound"}, "500": {"$ref": "#/components/responses/ServerError"}}
+      }
+    },
+    "/candidacy/delete": {
+      "delete": {
+        "tags": ["Candidacies"],
+        "summary": "Supprimer une candidature",
+        "security": [{"bearerAuth": []}],
+        "parameters": [{"$ref": "#/components/parameters/CandidacyId"}],
+        "responses": {"204": {"description": "Candidature supprimée"}, "400": {"$ref": "#/components/responses/BadRequest"}, "401": {"$ref": "#/components/responses/Unauthorized"}, "404": {"$ref": "#/components/responses/NotFound"}, "500": {"$ref": "#/components/responses/ServerError"}}
       }
     }
   },
   "components": {
+    "securitySchemes": {"bearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}},
+    "parameters": {
+      "UserId": {"name": "id", "in": "query", "required": true, "schema": {"type": "integer", "format": "int64"}},
+      "OfferId": {"name": "id", "in": "path", "required": true, "schema": {"type": "integer", "format": "int64"}},
+      "CandidacyId": {"name": "id", "in": "query", "required": true, "schema": {"type": "integer", "format": "int64"}}
+    },
     "schemas": {
-      "User": {
-        "type": "object",
-        "description": "Représente un utilisateur enregistré dans la base de données.",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Identifiant unique de l'utilisateur",
-            "readOnly": true,
-            "example": 1
-          },
-          "name": {
-            "type": "string",
-            "description": "Nom complet de l'utilisateur",
-            "example": "Jean Dupont"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "Adresse e-mail de l'utilisateur",
-            "example": "jean.dupont@example.com"
-          }
-        },
-        "required": [
-          "name",
-          "email"
-        ]
-      },
-      "UserCreate": {
-        "type": "object",
-        "description": "Modèle utilisé pour créer un utilisateur.",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Marie Martin"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "marie.martin@example.com"
-          }
-        },
-        "required": [
-          "name",
-          "email"
-        ]
-      },
-      "Error": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string",
-            "description": "Description de l'erreur"
-          }
-        },
-        "required": [
-          "message"
-        ]
-      }
+      "User": {"type": "object", "required": ["name", "email", "accountType"], "properties": {"id": {"type": "integer", "format": "int64", "readOnly": true}, "name": {"type": "string"}, "email": {"type": "string", "format": "email"}, "accountType": {"type": "string", "enum": ["jobseeker", "employer", "admin"]}, "companyName": {"type": "string", "nullable": true}}},
+      "LoginRequest": {"type": "object", "required": ["email", "password"], "properties": {"email": {"type": "string", "format": "email"}, "password": {"type": "string", "format": "password", "minLength": 8}}},
+      "RegisterRequest": {"type": "object", "required": ["name", "email", "password", "accountType"], "properties": {"name": {"type": "string"}, "email": {"type": "string", "format": "email"}, "password": {"type": "string", "format": "password", "minLength": 8, "writeOnly": true}, "accountType": {"type": "string", "enum": ["jobseeker", "employer"]}, "companyName": {"type": "string"}}},
+      "UserUpdateRequest": {"type": "object", "required": ["name", "email"], "properties": {"name": {"type": "string"}, "email": {"type": "string", "format": "email"}, "companyName": {"type": "string", "nullable": true}}},
+      "AuthResponse": {"type": "object", "required": ["token", "user"], "properties": {"token": {"type": "string"}, "user": {"$ref": "#/components/schemas/User"}}},
+      "Offer": {"type": "object", "properties": {"id": {"type": "integer", "format": "int64"}, "offer_name": {"type": "string"}, "description": {"type": "string"}, "address": {"type": "string"}, "company_name": {"type": "string"}, "company_id": {"type": "integer", "format": "int64"}, "salaire": {"type": "number", "format": "double"}, "latitude": {"type": "number", "format": "double"}, "longitude": {"type": "number", "format": "double"}, "date": {"type": "string", "format": "date-time"}, "max_distance": {"type": "number", "format": "double"}}},
+      "OfferCreateRequest": {"type": "object", "required": ["offer_name", "description", "address", "company_name", "latitude", "longitude"], "properties": {"offer_name": {"type": "string"}, "description": {"type": "string"}, "address": {"type": "string"}, "company_name": {"type": "string"}, "salary": {"type": "number", "format": "double", "default": 0}, "latitude": {"type": "number", "format": "double"}, "longitude": {"type": "number", "format": "double"}, "max_distance": {"type": "number", "format": "double", "default": 0}}},
+      "Candidacy": {"type": "object", "required": ["id", "listingId", "userEmail", "status", "createdAt"], "properties": {"id": {"type": "integer", "format": "int64"}, "listingId": {"type": "integer", "format": "int64"}, "userEmail": {"type": "string", "format": "email"}, "status": {"type": "string", "enum": ["pending", "accepted", "rejected"]}, "createdAt": {"type": "string", "format": "date-time"}}},
+      "CandidacyCreateRequest": {"type": "object", "required": ["listingId"], "properties": {"listingId": {"type": "integer", "format": "int64"}}},
+      "CandidacyUpdateRequest": {"type": "object", "required": ["id", "status"], "properties": {"id": {"type": "integer", "format": "int64"}, "status": {"type": "string", "enum": ["pending", "accepted", "rejected"]}}},
+      "ReportRequest": {"type": "object", "required": ["report_reason"], "properties": {"report_reason": {"type": "string"}, "report_message": {"type": "string"}}},
+      "CreatedIdResponse": {"type": "object", "required": ["id"], "properties": {"id": {"type": "integer", "format": "int64"}, "message": {"type": "string"}}},
+      "HealthResponse": {"type": "object", "required": ["status", "version", "database"], "properties": {"status": {"type": "string", "enum": ["ok", "degraded"]}, "version": {"type": "string"}, "database": {"type": "string", "enum": ["up", "down"]}}}
     },
     "responses": {
-      "BadRequest": {
-        "description": "Requête invalide",
-        "content": {
-          "text/plain": {
-            "schema": {
-              "type": "string",
-              "example": "Invalid request body"
-            }
-          }
-        }
-      },
-      "ServerError": {
-        "description": "Erreur interne du serveur",
-        "content": {
-          "text/plain": {
-            "schema": {
-              "type": "string",
-              "example": "Internal server error"
-            }
-          }
-        }
-      }
+      "BadRequest": {"description": "Requête invalide", "content": {"text/plain": {"schema": {"type": "string"}}}},
+      "Unauthorized": {"description": "Authentification requise ou JWT invalide", "content": {"text/plain": {"schema": {"type": "string"}}}},
+      "Forbidden": {"description": "Opération interdite", "content": {"text/plain": {"schema": {"type": "string"}}}},
+      "NotFound": {"description": "Ressource introuvable", "content": {"text/plain": {"schema": {"type": "string"}}}},
+      "Conflict": {"description": "Conflit avec une ressource existante", "content": {"text/plain": {"schema": {"type": "string"}}}},
+      "ServerError": {"description": "Erreur interne du serveur", "content": {"text/plain": {"schema": {"type": "string"}}}}
     }
-  },
-  "x-project-name": "GeoEmploi",
-  "x-api-type": "crud",
-  "x-database": "PostgreSQL"
+  }
 }
