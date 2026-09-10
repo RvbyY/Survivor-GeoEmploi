@@ -81,6 +81,7 @@ func main() {
 	http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
 	http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
 	http.HandleFunc("/offer/report/{id}", middleware.AuthCheck(handlers.ReportsOffer))
+    http.HandleFunc("/offer/report/get", handlers.GetReports)
 	http.HandleFunc("/candidacy", middleware.AuthCheck(handlers.GetCandidacies))
 	http.HandleFunc("/candidacy/add", middleware.AuthCheck(handlers.AddCandidacy))
 	http.HandleFunc("/candidacy/update", middleware.AuthCheck(handlers.UpdateCandidacy))

@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-
+	"time"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -24,8 +24,13 @@ type CreateOfferRequest struct {
 }
 
 type ReportOfferRequest struct {
-	ReportReason string `json:"report_reason"`
-	ReportMessage string `json:"report_message"`
+	ID          int       `json:"id"`
+	OfferID     int       `json:"offer_id"`
+	CandidateID int       `json:"candidate_id"`
+	Reason      string    `json:"reason"`
+	Message     string    `json:"message"`
+	Status      string    `json:"status"`
+	Date        time.Time `json:"date"`
 }
 
 const (
@@ -200,10 +205,10 @@ func ReportsOffer(w http.ResponseWriter, r *http.Request) {
 
 	var reportID int
 	err = DB.QueryRow(`
-		INSERT INTO reports (offer_id, candidate_id, reason, message)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO reports (offer_id, candidate_id, reason, message, status)
+		VALUES ($1, $2, $3, $4, $5)
 		RETURNING id
-	`, offerID, userID, req.ReportReason, req.ReportMessage).Scan(&reportID)
+	`, offerID, userID, req.Reason, req.Message, req.Status).Scan(&reportID)
 
 	if err != nil {
 		fmt.Println("DEBUG erreur report:", err)
@@ -217,4 +222,29 @@ func ReportsOffer(w http.ResponseWriter, r *http.Request) {
 		"id":      reportID,
 		"message": "offer reported successfully",
 	})
+}
+
+func GetReports(w http.ResponseWriter, r *http.Request) {
+    rows, err := DB.Query("SELECT id, offer_id, candidate_id, reason, message, status, date FROM reports")
+    if err != nil {
+		fmt.Println("DEBUG erreur query reports:", err)
+        http.Error(w, serverErrorMessage, http.StatusInternalServerError)
+        return
+    }
+    defer rows.Close()
+
+    var reports []ReportOfferRequest
+    for rows.Next() {
+        var rep ReportOfferRequest
+        err := rows.Scan(&rep.ID, &rep.OfferID, &rep.CandidateID, &rep.Reason, &rep.Message, &rep.Status, &rep.Date)
+        if err != nil {
+            fmt.Println("DEBUG erreur scan reports:", err)
+            http.Error(w, serverErrorMessage, http.StatusInternalServerError)
+            return
+        }
+        reports = append(reports, rep)
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(reports)
 }
