@@ -1,5 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
-import { useAuth } from './Authcontext'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 export type AccountType = 'jobseeker' | 'employer' | 'admin'
 
@@ -22,8 +21,7 @@ interface AccountsContextType {
 
 const AccountsContext = createContext<AccountsContextType | undefined>(undefined)
 
-export function AccountsProvider({ children }: { children: ReactNode }) {
-  const { token } = useAuth()
+export function AccountsProvider({ children }: Readonly<{ children: ReactNode }>) {
   const [accounts, setAccounts] = useState<Account[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,8 +63,13 @@ export function AccountsProvider({ children }: { children: ReactNode }) {
     setAccounts((prev) => prev.filter((a) => a.id !== id))
   }
 
+  const contextValue = useMemo(
+    () => ({ accounts, isLoading, error, refresh, updateAccountType, removeAccount }),
+    [accounts, isLoading, error],
+  )
+
   return (
-    <AccountsContext.Provider value={{ accounts, isLoading, error, refresh, updateAccountType, removeAccount }}>
+    <AccountsContext.Provider value={contextValue}>
       {children}
     </AccountsContext.Provider>
   )
