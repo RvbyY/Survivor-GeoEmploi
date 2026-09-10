@@ -14,8 +14,6 @@ import (
 	"backend/handlers"
 	"backend/middleware"
 
-	"github.com/golang-jwt/jwt/v5"
-	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -75,10 +73,10 @@ func main() {
 	http.HandleFunc("/auth/register", registerHandler)
 	fmt.Println("Server is listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", withCORS(http.DefaultServeMux)))
+    fmt.Println("Server is listening on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-	fmt.Println("Server is listening on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
