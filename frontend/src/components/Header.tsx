@@ -10,7 +10,7 @@ function Header() {
   return (
     <header className="app-header">
       <Link to="/">
-          <BrandBlock />
+        <BrandBlock />
       </Link>
 
       <nav className="app-header__nav">
@@ -27,9 +27,9 @@ function Header() {
         {isLoggedIn ? (
           <Link
             className="btn btn--secondary-on-dark"
-            to="/profil"
+            to={accountType === 'admin' ? '/admin' : '/profil'}
           >
-            Profil
+            {accountType === 'admin' ? 'Administration' : 'Profil'}
           </Link>
         ) : (
           <Link

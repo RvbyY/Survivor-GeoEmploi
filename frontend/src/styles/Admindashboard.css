@@ -43,19 +43,19 @@
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  color: #7b879b;
+  color: #ffffff;
   cursor: pointer;
 
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .admin-tab:hover {
-  color: var(--bg);
+  color: #7b879b;
 }
 
 .admin-tab--active {
-  color: var(--bg);
-  border-bottom-color: var(--bg);
+  color: #7b879b;
+  border-bottom-color: #7b879b;
 }
 
 /* ---- Table ---- */
