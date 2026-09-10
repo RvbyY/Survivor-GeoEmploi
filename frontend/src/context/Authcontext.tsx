@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
+import { createContext, useContext, useMemo, useState, type ReactNode } from 'react'
 
 type AccountType = 'jobseeker' | 'employer'
 
@@ -18,34 +18,68 @@ interface AuthContextType {
   updateUser: (userData: AuthUser) => void
 }
 
+type StoredSession = {
+  accountType: AccountType
+  user: AuthUser
+  token: string
+}
+
+const sessionStorageKey = 'geoemploi-auth-session'
+
+function readStoredSession(): StoredSession | null {
+  const storedSession = localStorage.getItem(sessionStorageKey)
+  if (!storedSession) return null
+
+  try {
+    const session = JSON.parse(storedSession) as StoredSession
+    if (!session.accountType || !session.user || !session.token) return null
+    return session
+  } catch {
+    localStorage.removeItem(sessionStorageKey)
+    return null
+  }
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [accountType, setAccountType] = useState<AccountType | null>(null)
-  const [user, setUser] = useState<AuthUser | null>(null)
-  const [token, setToken] = useState<string | null>(null)
+export function AuthProvider({ children }: Readonly<{ children: ReactNode }>) {
+  const [session, setSession] = useState<StoredSession | null>(readStoredSession)
 
   const login = (type: AccountType, userData: AuthUser, authToken: string) => {
-    setIsLoggedIn(true)
-    setAccountType(type)
-    setUser(userData)
-    setToken(authToken)
+    const nextSession = { accountType: type, user: userData, token: authToken }
+    localStorage.setItem(sessionStorageKey, JSON.stringify(nextSession))
+    setSession(nextSession)
   }
 
   const updateUser = (userData: AuthUser) => {
-    setUser(userData)
+    setSession((currentSession) => {
+      if (!currentSession) return null
+      const nextSession = { ...currentSession, user: userData }
+      localStorage.setItem(sessionStorageKey, JSON.stringify(nextSession))
+      return nextSession
+    })
   }
 
   const logout = () => {
-    setIsLoggedIn(false)
-    setAccountType(null)
-    setUser(null)
-    setToken(null)
+    localStorage.removeItem(sessionStorageKey)
+    setSession(null)
   }
 
+  const contextValue = useMemo(
+    () => ({
+      isLoggedIn: session !== null,
+      accountType: session?.accountType ?? null,
+      user: session?.user ?? null,
+      token: session?.token ?? null,
+      login,
+      logout,
+      updateUser,
+    }),
+    [session],
+  )
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, accountType, user, token, login, logout, updateUser }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   )
