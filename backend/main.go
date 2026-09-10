@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
+	_ "github.com/lib/pq"
 	"backend/handlers"
 	"backend/middleware"
 
@@ -67,6 +69,7 @@ func main() {
 	http.HandleFunc("/offer/get", handlers.GetOffer)
 	http.HandleFunc("/offer/add", middleware.AuthCheck(handlers.AddOffer))
 	http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
+	http.HandleFunc("/offer/report/{id}", middleware.AuthCheck(handlers.ReportsOffer))
 	http.HandleFunc("/health", Health)
 	http.HandleFunc("/auth/login", loginHandler)
 	http.HandleFunc("/auth/register", registerHandler)
@@ -74,6 +77,8 @@ func main() {
 	log.Fatal(http.ListenAndServe(":8080", withCORS(http.DefaultServeMux)))
 }
 
+	fmt.Println("Server is listening on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 func withCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")

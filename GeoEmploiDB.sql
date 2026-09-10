@@ -30,3 +30,11 @@ CREATE TABLE candidacy (
     offer_id INTEGER REFERENCES offers(id),
     candidate_id INTEGER REFERENCES users(id)
 );
+
+CREATE TABLE reports (
+    id SERIAL PRIMARY KEY,
+    offer_id INTEGER NOT NULL REFERENCES offers(id),
+    candidate_id INTEGER NOT NULL REFERENCES users(id),
+    reason VARCHAR(255) NOT NULL,
+    date TIMESTAMP DEFAULT NOW()
+);

@@ -22,6 +22,10 @@ type CreateOfferRequest struct {
 	MaxDistance float64 `json:"max_distance"`
 }
 
+type ReportOfferRequest struct {
+	ReportReason string `json:"report_reason"`
+}
+
 func GetOffer(w http.ResponseWriter, r *http.Request) {
 	rows, err := DB.Query("SELECT id, offer_name, description, address, company_name, company_id, salary, latitude, longitude, date, max_distance FROM offers")
 	if err != nil {
@@ -126,4 +130,76 @@ func DeleteOffer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func ReportsOffer(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value(middleware.ClaimsKey).(jwt.MapClaims)
+	fmt.Println("coucou")
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	userIDFloat, ok := claims["user_id"].(float64)
+	if !ok {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+	userID := int(userIDFloat)
+
+	var exists bool
+	err := DB.QueryRow(`SELECT EXISTS(SELECT 1 FROM users WHERE id = $1)`, userID).Scan(&exists)
+	if err != nil {
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		http.Error(w, "Account not found", http.StatusForbidden)
+		return
+	}
+
+	offerIDStr := r.PathValue("id")
+	offerID, err := strconv.Atoi(offerIDStr)
+	if err != nil {
+		http.Error(w, "invalid offer id", http.StatusBadRequest)
+		return
+	}
+
+	var offerExists bool
+	err = DB.QueryRow(`SELECT EXISTS(SELECT 1 FROM offers WHERE id = $1)`, offerID).Scan(&offerExists)
+	if err != nil {
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
+	if !offerExists {
+		http.Error(w, "Offer not found", http.StatusNotFound)
+		return
+	}
+
+	var req ReportOfferRequest
+	err = json.NewDecoder(r.Body).Decode(&req);
+	if err != nil {
+		http.Error(w, "invalid body", http.StatusBadRequest)
+		return
+	}
+
+	var reportID int
+	err = DB.QueryRow(`
+		INSERT INTO reports (offer_id, candidate_id, reason)
+		VALUES ($1, $2, $3)
+		RETURNING id
+	`, offerID, userID, req.ReportReason).Scan(&reportID)
+
+	if err != nil {
+		fmt.Println("DEBUG erreur report:", err)
+		http.Error(w, "report creation failed", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"id":      reportID,
+		"message": "offer reported successfully",
+	})
 }
