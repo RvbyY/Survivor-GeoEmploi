@@ -6,10 +6,10 @@ services:
       POSTGRES_PASSWORD: motdepasse123
       POSTGRES_DB: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
       - ../GeoEmploiDB.sql:/docker-entrypoint-initdb.d/GeoEmploiDB.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d mydb"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
