@@ -4,7 +4,7 @@ import { useAuth } from '../context/Authcontext'
 import { useListings } from '../context/Listingscontext'
 
 function Header() {
-  const { isLoggedIn } = useAuth()
+  const { isLoggedIn, accountType } = useAuth()
   const { listings } = useListings()
 
   return (
