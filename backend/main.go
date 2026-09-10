@@ -14,6 +14,7 @@ import (
 	"backend/handlers"
 	"backend/middleware"
 	"golang.org/x/crypto/bcrypt"
+    _"github.com/lib/pq"
 )
 
 const (
