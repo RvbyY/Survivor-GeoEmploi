@@ -6,7 +6,7 @@ import ReportOffer from '../components/Reportoffer'
 
 function formatFullDate(iso: string): string {
   const date = new Date(iso)
-  if (isNaN(date.getTime())) return ''
+  if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
@@ -45,7 +45,7 @@ export default function OfferDetail() {
     )
   )
 
-  function handleApply() {
+  async function handleApply() {
     if (!isLoggedIn) {
       navigate('/login')
       return
@@ -64,7 +64,7 @@ export default function OfferDetail() {
       return
     }
 
-    const success = addApplication(listing.id, user.email)
+    const success = await addApplication(listing.id, user.email)
 
     if (!success) {
       alert('Vous avez déjà postulé à cette offre.')

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type SubmitEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/Authcontext';
 import { useListings } from '../context/Listingscontext';
@@ -14,7 +14,7 @@ export default function Publishoffer() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError(null)
     setIsSubmitting(true)
@@ -27,15 +27,15 @@ export default function Publishoffer() {
       }
       const [lat, lng] = result
 
-    addListing({
-      title,
-      company: user?.companyName ?? 'Entreprise',
-      description,
-      address,
-      date: new Date().toISOString(),
-      lat,
-      lng,
-    })
+      await addListing({
+        title,
+        company: user?.companyName ?? 'Entreprise',
+        description,
+        address,
+        date: new Date().toISOString(),
+        lat,
+        lng,
+      })
 
       navigate('/map')
     } finally {
@@ -48,15 +48,15 @@ export default function Publishoffer() {
       <h1>Publier une offre</h1>
       <form onSubmit={handleSubmit}>
         <label>
-          Titre du poste
+          <span>Titre du poste</span>
           <input value={title} onChange={(e) => setTitle(e.target.value)} required />
         </label>
         <label>
-          Description complète
+          <span>Description complète</span>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
         </label>
         <label>
-          Adresse du poste
+          <span>Adresse du poste</span>
           <input value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="ex: 10 rue de la Gare, Strasbourg" />
         </label>
 
