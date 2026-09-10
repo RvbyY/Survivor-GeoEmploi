@@ -1,8 +1,6 @@
 package main
 
 import (
-	"backend/handlers"
-	"backend/middleware"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -13,6 +11,12 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/lib/pq"
+	"backend/handlers"
+	"backend/middleware"
+
+	"github.com/golang-jwt/jwt/v5"
+	_ "github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (
@@ -28,9 +32,11 @@ const appVersion = "0.2"
 var db *sql.DB
 
 type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Email       string  `json:"email"`
+	AccountType string  `json:"accountType"`
+	CompanyName *string `json:"companyName"`
 }
 
 type HealthResponse struct {
@@ -65,9 +71,25 @@ func main() {
 	http.HandleFunc("/offer/delete/{id}", middleware.AuthCheck(handlers.DeleteOffer))
 	http.HandleFunc("/offer/report/{id}", middleware.AuthCheck(handlers.ReportsOffer))
 	http.HandleFunc("/health", Health)
+	http.HandleFunc("/auth/login", loginHandler)
+	http.HandleFunc("/auth/register", registerHandler)
+	fmt.Println("Server is listening on port 8080")
+	log.Fatal(http.ListenAndServe(":8080", withCORS(http.DefaultServeMux)))
+}
 
 	fmt.Println("Server is listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
+func withCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func Health(w http.ResponseWriter, r *http.Request) {
@@ -116,6 +138,12 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 		users = append(users, user)
 	}
 
+	if err := rows.Err(); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
 }
 
@@ -200,4 +228,90 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Fprintf(w, "User deleted successfully")
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	var credentials struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+
+	var passwordHash string
+	var user User
+
+	err := db.QueryRow(
+		"SELECT id, name, email, account_type, company_name, password_hash FROM users WHERE email = $1",
+		credentials.Email,
+	).Scan(&user.ID, &user.Name, &user.Email,
+		&user.AccountType, &user.CompanyName, &passwordHash)
+
+	if err != nil || bcrypt.CompareHashAndPassword(
+		[]byte(passwordHash),
+		[]byte(credentials.Password),
+	) != nil {
+		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		return
+	}
+	token, err := middleware.CreateToken(user.ID, user.AccountType)
+	if err != nil {
+		http.Error(w, "could not create session", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{
+		"user":  user,
+		"token": token,
+	})
+}
+
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	var registration struct {
+		Name        string `json:"name"`
+		Email       string `json:"email"`
+		Password    string `json:"password"`
+		AccountType string `json:"accountType"`
+		CompanyName string `json:"companyName"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&registration); err != nil {
+		http.Error(w, "invalid request", http.StatusBadRequest)
+		return
+	}
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(registration.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(w, "could not secure password", http.StatusInternalServerError)
+		return
+	}
+
+	var user User
+	err = db.QueryRow(
+		`INSERT INTO users (name, email, password_hash, account_type, company_name)
+		VALUES ($1, $2, $3, $4, NULLIF($5, ''))
+		RETURNING id, name, email, account_type, company_name`,
+		registration.Name,
+		registration.Email,
+		string(passwordHash),
+		registration.AccountType,
+		registration.CompanyName,
+	).Scan(&user.ID, &user.Name, &user.Email, &user.AccountType, &user.CompanyName)
+	if err != nil {
+		http.Error(w, "could not create account",
+			http.StatusConflict)
+		return
+	}
+	token, err := middleware.CreateToken(user.ID, user.AccountType)
+	if err != nil {
+		http.Error(w, "could not create session", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(map[string]any{"user": user, "token": token})
 }

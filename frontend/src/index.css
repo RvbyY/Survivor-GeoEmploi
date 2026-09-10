@@ -1,0 +1,44 @@
+:root {
+  --bg: #58268e;
+  --text: #dde3ee;
+  --text-h: #ffffff;
+  --border: #e2771f;
+
+  --sans: 'Spectral', Georgia, serif;
+  --heading: 'Public sans', 'Arial', sans-serif;
+
+  font: 16px/145% var(--sans);
+  color: var(--text);
+  background: var(--bg);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--heading);
+  font-weight: 700;
+  color: var(--text-h);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
